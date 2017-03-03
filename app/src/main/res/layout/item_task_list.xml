@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="@dimen/smallGap"
+    tools:ignore="HardcodedText">
+
+    <android.support.v7.widget.AppCompatButton xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:id="@+id/killTask"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentTop="true"
+        android:layout_marginEnd="@dimen/smallGap"
+        android:text="结束任务"
+        android:textSize="@dimen/mediumTextSize"
+        app:backgroundTint="?attr/colorAccent" />
+
+    <TextView
+        android:id="@+id/taskTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:layout_toStartOf="@id/killTask"
+        android:gravity="center"
+        android:textSize="@dimen/largeTextSize" />
+
+    <TextView
+        android:id="@+id/taskSrcDest"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
+        android:layout_below="@id/taskTitle"
+        android:layout_toStartOf="@id/killTask"
+        android:alpha="0.8"
+        android:textSize="@dimen/smallTextSize" />
+
+    <android.support.v7.widget.GridLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/taskSrcDest"
+        android:layout_marginEnd="@dimen/smallGap"
+        android:layout_marginStart="@dimen/smallGap"
+        app:columnCount="3"
+        app:orientation="horizontal">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="总计"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_column="1"
+            app:layout_columnWeight="1"
+            app:layout_row="0" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="已完成"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="文件夹数"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:id="@+id/dirTotal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:id="@+id/dirDone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="文件数"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:id="@+id/fileTotal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:id="@+id/fileDone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:text="总大小"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:id="@+id/sizeTotal"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:id="@+id/sizeDone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:gravity="center"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_columnWeight="1" />
+
+        <TextView
+            android:id="@+id/taskError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="end"
+            android:textColor="@color/textColorError"
+            android:textSize="@dimen/smallTextSize"
+            android:visibility="gone"
+            app:layout_columnSpan="3" />
+
+        <TextView
+            android:id="@+id/taskStatus"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:alpha="0.8"
+            android:ellipsize="start"
+            android:lines="2"
+            android:textSize="@dimen/smallTextSize"
+            app:layout_columnSpan="3" />
+
+
+    </android.support.v7.widget.GridLayout>
+</RelativeLayout>

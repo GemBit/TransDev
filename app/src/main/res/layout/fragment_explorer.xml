@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:background="?attr/android:colorBackground"
+    android:layout_height="match_parent">
+
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/pathBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingEnd="@dimen/smallGap"
+        android:paddingStart="@dimen/smallGap"
+        app:elevation="0dp">
+
+        <TextView
+            android:id="@+id/fragmentTitle"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:gravity="center"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textSize="@dimen/mediumTextSize"
+            app:layout_scrollFlags="scroll|enterAlways" />
+
+        <cn.gembit.transdev.widgets.PathBar
+            android:id="@+id/pathBar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:scrollbars="none" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefreshLayout"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:elevation="0dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <cn.gembit.transdev.widgets.AutoFitRecyclerView
+            android:id="@+id/fileList"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scrollbars="vertical" />
+
+    </android.support.v4.widget.SwipeRefreshLayout>
+
+    <cn.gembit.transdev.widgets.FloatingActionButtonMenu
+        android:id="@+id/fabMenu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardElevation="0dp" />
+
+    <cn.gembit.transdev.widgets.WaitView
+        android:id="@+id/waitView"
+        android:layout_width="@dimen/waitViewSize"
+        android:layout_height="@dimen/waitViewSize"
+        android:layout_gravity="center" />
+
+</android.support.design.widget.CoordinatorLayout>

@@ -1,0 +1,22 @@
+<resources>
+
+    <dimen name="waitViewSize">140dp</dimen>
+
+    <dimen name="fabMargin">14dp</dimen>
+    <dimen name="fabNormal">72dp</dimen>
+    <dimen name="fabMini">56dp</dimen>
+    <dimen name="fabTitleHorizontalPadding">14dp</dimen>
+    <dimen name="fabTitleVerticalPadding">6dp</dimen>
+
+    <dimen name="fileListPictureSize">49dp</dimen>
+    <dimen name="fileListHorizontalGap">21dp</dimen>
+    <dimen name="fileListVerticalGap">7dp</dimen>
+
+    <dimen name="smallGap">14dp</dimen>
+    <dimen name="mediumGap">28dp</dimen>
+    <dimen name="largeGap">42dp</dimen>
+
+    <dimen name="smallTextSize">16sp</dimen>
+    <dimen name="mediumTextSize">20sp</dimen>
+    <dimen name="largeTextSize">24sp</dimen>
+</resources>

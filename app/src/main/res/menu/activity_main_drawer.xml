@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:ignore="HardcodedText">
+
+    <group android:checkableBehavior="none">
+        <item
+            android:orderInCategory="1"
+            android:icon="@drawable/ic_task"
+            android:id="@+id/transTask"
+            android:checkable="false"
+            android:title="传输任务" />
+        <item
+            android:orderInCategory="2"
+            android:icon="@drawable/ic_task"
+            android:id="@+id/addition"
+            android:checkable="false"
+            android:title="更多" />
+    </group>
+
+    <group
+        android:id="@+id/groupSession"
+        android:checkableBehavior="single" />
+
+    <group
+        android:id="@+id/groupLocal"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/addLocal"
+            android:checkable="false"
+            android:icon="@drawable/ic_add"
+            android:orderInCategory="5"
+            android:title="添加路径收藏" />
+    </group>
+
+    <group
+        android:id="@+id/groupClient"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/addClient"
+            android:checkable="false"
+            android:icon="@drawable/ic_add"
+            android:orderInCategory="7"
+            android:title="添加远程连接" />
+    </group>
+
+    <group
+        android:id="@+id/groupServer"
+        android:checkableBehavior="none">
+        <item
+            android:id="@+id/addServer"
+            android:checkable="false"
+            android:icon="@drawable/ic_add"
+            android:orderInCategory="9"
+            android:title="添加共享账户" />
+
+        <item
+            android:id="@+id/serverStatus"
+            android:checkable="false"
+            android:icon="@drawable/ic_server_status"
+            android:orderInCategory="10"
+            android:title="文件共享状态" />
+    </group>
+
+
+</menu>

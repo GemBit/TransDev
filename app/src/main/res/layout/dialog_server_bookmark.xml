@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/mediumGap"
+    app:columnCount="2"
+    app:orientation="horizontal"
+    tools:ignore="HardcodedText">
+
+    <TextView
+        android:id="@+id/tvUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="用户名"
+        android:textSize="@dimen/mediumTextSize" />
+
+    <EditText
+        android:id="@+id/edtUsername"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="将作为对方登陆用户名"
+        android:selectAllOnFocus="true"
+        android:text="anonymous"
+        android:textSize="@dimen/mediumTextSize"
+        app:layout_columnWeight="1" />
+
+    <TextView
+        android:id="@+id/tvPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="用户名"
+        android:textSize="@dimen/mediumTextSize" />
+
+    <EditText
+        android:id="@+id/edtPassword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="将作为对方登陆密码"
+        android:inputType="textVisiblePassword"
+        android:selectAllOnFocus="true"
+        android:textSize="@dimen/mediumTextSize"
+        app:layout_columnWeight="1" />
+
+    <CheckBox
+        android:id="@+id/chkWritable"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:checked="false"
+        android:gravity="start|center_vertical"
+        android:text="允许写入"
+        app:layout_columnSpan="2"
+        app:layout_columnWeight="1" />
+
+    <CheckBox
+        android:id="@+id/chkConfined"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:gravity="start|center_vertical"
+        android:text="限制其可访文文件"
+        app:layout_columnSpan="2"
+        app:layout_columnWeight="1" />
+
+</android.support.v7.widget.GridLayout>

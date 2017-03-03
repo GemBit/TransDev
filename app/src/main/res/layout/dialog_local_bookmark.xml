@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/mediumGap"
+    app:columnCount="2"
+    app:orientation="horizontal"
+    tools:ignore="HardcodedText">
+
+    <TextView
+        android:id="@+id/tvName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="名称"
+        android:textSize="@dimen/mediumTextSize" />
+
+    <EditText
+        android:id="@+id/edtName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="书签名称"
+        android:selectAllOnFocus="true"
+        android:textSize="@dimen/mediumTextSize"
+        app:layout_columnWeight="1" />
+
+
+    <TextView
+        android:id="@+id/tvRoot"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="路径"
+        android:textSize="@dimen/mediumTextSize" />
+
+    <EditText
+        android:id="@+id/edtRoot"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="在路径长按可以复制路径"
+        android:selectAllOnFocus="true"
+        android:textSize="@dimen/mediumTextSize"
+        app:layout_columnWeight="1" />
+
+</android.support.v7.widget.GridLayout>

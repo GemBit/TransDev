@@ -1,0 +1,118 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/mediumGap"
+    app:columnCount="2"
+    app:orientation="horizontal"
+    tools:ignore="HardcodedText">
+
+
+    <TextView
+        android:id="@+id/tvAddress"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="地址"
+        android:textSize="@dimen/mediumTextSize" />
+
+    <EditText
+        android:id="@+id/edtAddress"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="远程主机的IP或域名"
+        android:selectAllOnFocus="true"
+        android:textSize="@dimen/mediumTextSize"
+        app:layout_columnWeight="1" />
+
+
+    <TextView
+        android:id="@+id/tvPort"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="端口"
+        android:textSize="@dimen/mediumTextSize" />
+
+    <EditText
+        android:id="@+id/edtPort"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="本软件默认2222"
+        android:inputType="number"
+        android:selectAllOnFocus="true"
+        android:text="21"
+        android:textSize="@dimen/mediumTextSize"
+        app:layout_columnWeight="1" />
+
+    <TextView
+        android:id="@+id/tvUsername"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="用户名"
+        android:textSize="@dimen/mediumTextSize" />
+
+    <EditText
+        android:id="@+id/edtUsername"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="请输入登陆名称"
+        android:selectAllOnFocus="true"
+        android:text="anonymous"
+        android:textSize="@dimen/mediumTextSize"
+        app:layout_columnWeight="1" />
+
+
+    <TextView
+        android:id="@+id/tvPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="密码"
+        android:textSize="@dimen/mediumTextSize" />
+
+    <EditText
+        android:id="@+id/edtPassword"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="请输入登陆密码"
+        android:inputType="textPassword"
+        android:selectAllOnFocus="true"
+        android:textSize="@dimen/mediumTextSize"
+        app:layout_columnWeight="1" />
+
+    <TextView
+        android:id="@+id/tvEncoding"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="编码"
+        android:textSize="@dimen/mediumTextSize" />
+
+    <android.support.v7.widget.AppCompatSpinner
+        android:id="@+id/spnEncoding"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:spinnerMode="dialog"
+        app:layout_columnWeight="1" />
+
+    <TextView
+        android:id="@+id/tvName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="名称"
+        android:textSize="@dimen/mediumTextSize" />
+
+    <EditText
+        android:id="@+id/edtName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:hint="书签名称，可缺省"
+        android:selectAllOnFocus="true"
+        android:textSize="@dimen/mediumTextSize"
+        app:layout_columnWeight="1" />
+
+</android.support.v7.widget.GridLayout>
