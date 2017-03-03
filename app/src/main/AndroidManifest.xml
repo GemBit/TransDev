@@ -9,6 +9,7 @@
     <application
         android:name=".addition.MyApp"
         android:allowBackup="false"
+        android:supportsRtl="true"
         android:icon="@drawable/ic_launcher"
         android:label="捷传"
         android:theme="@style/AppTheme">

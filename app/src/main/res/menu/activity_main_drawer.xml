@@ -7,12 +7,20 @@
         <item
             android:orderInCategory="1"
             android:icon="@drawable/ic_task"
-            android:id="@+id/transTask"
+            android:id="@+id/taskManage"
             android:checkable="false"
-            android:title="传输任务" />
+            android:title="任务管理" />
+
         <item
             android:orderInCategory="2"
-            android:icon="@drawable/ic_task"
+            android:icon="@drawable/ic_quick_connect"
+            android:id="@+id/quickConnect"
+            android:checkable="false"
+            android:title="一键速连" />
+
+        <item
+            android:orderInCategory="3"
+            android:icon="@drawable/ic_addtion"
             android:id="@+id/addition"
             android:checkable="false"
             android:title="更多" />

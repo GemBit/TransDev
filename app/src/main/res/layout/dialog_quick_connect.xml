@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v7.widget.GridLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/mediumGap"
+    app:columnCount="2"
+    app:orientation="horizontal"
+    tools:ignore="HardcodedText">
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="广播"
+        android:textSize="@dimen/mediumTextSize"
+        android:textStyle="bold"
+        app:layout_columnSpan="2" />
+
+    <TextView
+        android:id="@+id/tvSend"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textSize="@dimen/smallTextSize"
+        app:layout_columnSpan="2" />
+
+    <android.support.v7.widget.SwitchCompat
+        android:id="@+id/swtSend"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/smallGap"
+        android:checked="false"
+        app:layout_column="1"
+        app:layout_row="2" />
+
+    <android.support.v7.widget.AppCompatSpinner
+        android:id="@+id/spnSend"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:spinnerMode="dropdown"
+        app:layout_column="0"
+        app:layout_columnWeight="1"
+        app:layout_row="2" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/mediumGap"
+        android:gravity="center"
+        android:text="搜寻"
+        android:textSize="@dimen/mediumTextSize"
+        android:textStyle="bold"
+        app:layout_columnSpan="2" />
+
+    <android.support.v7.widget.SwitchCompat
+        android:id="@+id/swtReceive"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/smallGap"
+        android:checked="false"
+        app:layout_column="1"
+        app:layout_row="4" />
+
+
+    <TextView
+        android:id="@+id/tvReceive"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        app:layout_column="0"
+        app:layout_columnWeight="1"
+        app:layout_row="4" />
+
+</android.support.v7.widget.GridLayout>

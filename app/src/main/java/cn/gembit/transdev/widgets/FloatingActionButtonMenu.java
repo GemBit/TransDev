@@ -102,15 +102,16 @@ public class FloatingActionButtonMenu extends CardView {
         mBaseButton.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.round_button));
         mBaseButton.setId(View.generateViewId());
 
-        int fabMargin = getContext().getResources().getDimensionPixelSize(R.dimen.fabMargin);
+        int fabGap = getContext().getResources().getDimensionPixelSize(R.dimen.fabGap);
         int fabNormal = getContext().getResources().getDimensionPixelSize(R.dimen.fabNormal);
         int fabMini = getContext().getResources().getDimensionPixelSize(R.dimen.fabMini);
 
         RelativeLayout.LayoutParams baseButtonParams
                 = new RelativeLayout.LayoutParams(fabNormal, fabNormal);
+        baseButtonParams.setMargins(0, 0, 0, fabGap);
+        baseButtonParams.setMarginEnd(fabGap);
         baseButtonParams.addRule(RelativeLayout.ALIGN_PARENT_END);
         baseButtonParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        baseButtonParams.setMargins(0, 0, fabMargin, fabMargin);
         mRelativeLayout.addView(mBaseButton, baseButtonParams);
 
         ImageButton lowerOne = mBaseButton;
@@ -243,7 +244,7 @@ public class FloatingActionButtonMenu extends CardView {
         public SubItem(Context context, String text, int drawableId, OnClickListener listener) {
             mValid = true;
 
-            int fabMargin = context.getResources().getDimensionPixelOffset(R.dimen.fabMargin);
+            int fabGap = context.getResources().getDimensionPixelOffset(R.dimen.fabGap);
             int hPadding = context.getResources()
                     .getDimensionPixelSize(R.dimen.fabTitleHorizontalPadding);
             int vPadding = context.getResources()
@@ -267,13 +268,13 @@ public class FloatingActionButtonMenu extends CardView {
             mButtonParas = new RelativeLayout.LayoutParams(
                     LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             mButtonParas.addRule(RelativeLayout.ALIGN_PARENT_END);
-            mButtonParas.setMargins(0, 0, 0, fabMargin);
+            mButtonParas.setMargins(0, 0, 0, fabGap);
 
             mTitleParas = new RelativeLayout.LayoutParams(
                     LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
             mTitleParas.addRule(RelativeLayout.START_OF, mButton.getId());
             mTitleParas.addRule(RelativeLayout.ALIGN_BOTTOM, mButton.getId());
-            mTitleParas.setMargins(fabMargin, 0, fabMargin, 0);
+            mTitleParas.setMargins(fabGap, 0, fabGap, 0);
         }
 
         public void setValidity(boolean valid) {

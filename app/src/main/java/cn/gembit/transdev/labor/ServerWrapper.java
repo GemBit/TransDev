@@ -197,7 +197,7 @@ public class ServerWrapper {
                 Enumeration<InetAddress> enumIPAddress = en.nextElement().getInetAddresses();
                 while (enumIPAddress.hasMoreElements()) {
                     InetAddress inetAddress = enumIPAddress.nextElement();
-                    if (!inetAddress.isLoopbackAddress() && inetAddress instanceof Inet4Address) {
+                    if (inetAddress instanceof Inet4Address && inetAddress.isSiteLocalAddress()) {
                         return inetAddress.getHostAddress();
                     }
                 }

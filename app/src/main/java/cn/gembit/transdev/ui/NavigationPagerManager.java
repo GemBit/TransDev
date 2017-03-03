@@ -24,6 +24,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import java.nio.charset.Charset;
@@ -38,6 +39,7 @@ import cn.gembit.transdev.R;
 import cn.gembit.transdev.addition.MyApp;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.labor.ClientAction;
+import cn.gembit.transdev.labor.ConnectionBroadcast;
 import cn.gembit.transdev.labor.ServerWrapper;
 import cn.gembit.transdev.widgets.BottomDialogBuilder;
 
@@ -69,7 +71,8 @@ public class NavigationPagerManager implements NavigationView.OnNavigationItemSe
     private ServerBookmark mServerBookmark;
 
     private Menu mMenu;
-    private MenuItem mTransTask;
+    private MenuItem mTaskManage;
+    private MenuItem mQuickConnect;
     private MenuItem mAddition;
     private MenuItem mAddLocal;
     private MenuItem mAddClient;
@@ -96,7 +99,8 @@ public class NavigationPagerManager implements NavigationView.OnNavigationItemSe
         mServerBookmark = new ServerBookmark();
 
         mMenu = navigation.getMenu();
-        mTransTask = mMenu.findItem(R.id.transTask);
+        mTaskManage = mMenu.findItem(R.id.taskManage);
+        mQuickConnect = mMenu.findItem(R.id.quickConnect);
         mAddition = mMenu.findItem(R.id.addition);
         mAddLocal = mMenu.findItem(R.id.addLocal);
         mAddClient = mMenu.findItem(R.id.addClient);
@@ -170,16 +174,31 @@ public class NavigationPagerManager implements NavigationView.OnNavigationItemSe
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (item == mTransTask) {
+        if (item == mTaskManage) {
             mContext.startActivity(new Intent(mContext, TaskActivity.class));
+            back();
+
+        } else if (item == mQuickConnect) {
+            quickConnect();
+            back();
+
         } else if (item == mAddition) {
+            new AlertDialog.Builder(mContext)
+                    .setCancelable(false)
+                    .setNegativeButton("取消", null)
+                    .setTitle("我还在赶工")
+                    .setMessage("计划添加换主题，检车跟新，使用说明， 分享应用和开源许可")
+                    .show();
 
         } else if (item == mAddLocal) {
             addOrModifyLocalBookmark(null);
+
         } else if (item == mAddClient) {
             addOrModifyClientBookmark(null);
+
         } else if (item == mAddServer) {
             addOrModifyServerBookmark(null);
+
         } else if (item == mServerStatus) {
             String msg;
             int port = mServerBookmark.mServer.getPort();
@@ -236,11 +255,124 @@ public class NavigationPagerManager implements NavigationView.OnNavigationItemSe
                     break;
             }
 
-            if (mDrawer.isDrawerOpen(GravityCompat.START)) {
-                mDrawer.closeDrawer(GravityCompat.START);
-            }
+            back();
         }
         return true;
+    }
+
+    private void quickConnect() {
+        final View view = View.inflate(mContext, R.layout.dialog_quick_connect, null);
+
+        final TextView tvSend = (TextView) view.findViewById(R.id.tvSend);
+        final AppCompatSpinner spnSend = (AppCompatSpinner) view.findViewById(R.id.spnSend);
+        final SwitchCompat swtSend = (SwitchCompat) view.findViewById(R.id.swtSend);
+
+        final TextView tvReceive = (TextView) view.findViewById(R.id.tvReceive);
+        final SwitchCompat swtReceive = (SwitchCompat) view.findViewById(R.id.swtReceive);
+
+
+        final AlertDialog quickConnectDialog = new AlertDialog.Builder(mContext)
+                .setCancelable(false)
+                .setView(view)
+                .setNegativeButton("退出", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (swtSend.isChecked()) {
+                            swtSend.performClick();
+                        }
+                        if (swtReceive.isChecked()) {
+                            swtReceive.performClick();
+                        }
+                    }
+                })
+                .show();
+
+        if (mServerBookmark.mServer.getPort() == -1) {
+            tvSend.setText("开启文件共享后方可启用广播");
+            spnSend.setEnabled(false);
+            swtSend.setEnabled(false);
+
+        } else {
+            tvSend.setText("广播未开启");
+            spnSend.setAdapter(new ArrayAdapter<>(mContext,
+                    R.layout.support_simple_spinner_dropdown_item,
+                    mServerBookmark.mBookmark.keySet().toArray(new String[0])));
+
+            swtSend.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                @Override
+                public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                    spnSend.setEnabled(!isChecked);
+
+                    if (!isChecked) {
+                        ConnectionBroadcast.stopSending();
+                        return;
+                    }
+
+                    String username = (String) spnSend.getSelectedItem();
+                    ServerWrapper.UserMeta userMeta = mServerBookmark.mBookmark.get(username);
+                    if (userMeta == null) {
+                        Toast.makeText(mContext, "请先选择账户", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+
+                    ConnectionBroadcast.sendBroadcast(userMeta.username, userMeta.password
+                            , new ConnectionBroadcast.OnSendingStatusChangedCallback() {
+                                @Override
+                                public void onSendingStatusChanged(boolean sending, String brief) {
+                                    swtSend.setChecked(sending);
+                                    tvSend.setText(brief);
+                                }
+                            });
+                }
+            });
+        }
+
+
+        tvReceive.setText("未开启搜寻");
+
+        swtReceive.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (!isChecked) {
+                    ConnectionBroadcast.stopReceiving();
+                    return;
+                } else {
+                    tvReceive.setText("正在搜寻…");
+                }
+
+                ConnectionBroadcast.receiveBroadcast(new ConnectionBroadcast.OnReceivedCallback() {
+                    @Override
+                    public void onReceived(final ClientAction.Argument.Connect argument,
+                                           final String deviceName, String brief) {
+                        tvReceive.setText(brief);
+
+                        if (argument == null) {
+                            swtReceive.setChecked(false);
+                            return;
+                        }
+
+                        swtReceive.setChecked(false);
+                        new AlertDialog.Builder(mContext)
+                                .setCancelable(false)
+                                .setTitle("发现设备")
+                                .setMessage(deviceName + "\n地址：" + argument.address)
+                                .setNegativeButton("取消", null)
+                                .setPositiveButton("连接", new DialogInterface.OnClickListener() {
+                                    @Override
+                                    public void onClick(DialogInterface dialog, int which) {
+                                        addSession(
+                                                ClientExplorerFragment.newInstance(
+                                                        "远程文件：" + deviceName, argument),
+                                                R.drawable.ic_client,
+                                                deviceName);
+                                        quickConnectDialog.dismiss();
+                                    }
+                                })
+                                .show();
+                    }
+                });
+            }
+        });
     }
 
     private void addSession(ExplorerFragment fragment, int iconResId, String menuItemTitle) {

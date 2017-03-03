@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Process;
 import android.os.StrictMode;
 
 import java.io.UnsupportedEncodingException;
@@ -16,7 +17,6 @@ import java.io.UnsupportedEncodingException;
 public class MyApp extends Application implements Thread.UncaughtExceptionHandler {
 
     private static MyApp sMyApp;
-    private Thread.UncaughtExceptionHandler mOriginalHandler;
 
     public static Context getContext() {
         return sMyApp.getApplicationContext();
@@ -76,7 +76,6 @@ public class MyApp extends Application implements Thread.UncaughtExceptionHandle
                 .penaltyDeath()
                 .build());
         sMyApp = this;
-        mOriginalHandler = Thread.getDefaultUncaughtExceptionHandler();
         Thread.setDefaultUncaughtExceptionHandler(this);
 
         doLaunchWork();
@@ -118,40 +117,31 @@ public class MyApp extends Application implements Thread.UncaughtExceptionHandle
                 .append('(').append(versionCode).append(")\n");
 
         Throwable e = cause;
-        String myPackage = getPackageName();
         do {
             msg.append("cause:").append(e.getClass().getName()).append(":")
                     .append(e.getMessage()).append("\n");
             for (StackTraceElement ele : e.getStackTrace()) {
-//                if (ele.getClassName().startsWith(myPackage)) {
-                    msg.append("\t")
-//                            .append(ele.getClassName().substring(myPackage.length()))
-                            .append(ele.getClassName())
-                            .append("#")
-                            .append(ele.getMethodName())
-                            .append("(")
-                            .append(ele.getFileName())
-                            .append(":")
-                            .append(ele.getLineNumber())
-                            .append(")\n");
-//                } else {
-//                    String omitted = "\t...\n";
-//                    int index = msg.lastIndexOf(omitted);
-//                    if (index == -1 || index != msg.length() - omitted.length()) {
-//                        msg.append(omitted);
-//                    }
-//                }
+                msg.append("\t")
+                        .append(ele.getClassName())
+                        .append("#")
+                        .append(ele.getMethodName())
+                        .append("(")
+                        .append(ele.getFileName())
+                        .append(":")
+                        .append(ele.getLineNumber())
+                        .append(")\n");
             }
             e = e.getCause();
         } while (e != null);
 
         String url = "http://transdev.gembit.cn/BugReport.php";
-        url += "?msg=" + MyApp.encode(msg.toString());
+        url += "?msg=" + MyApp.encode(msg.substring(0, Math.min(msg.length(), 2000)));
 
         Intent chooser = Intent.createChooser(new Intent(Intent.ACTION_VIEW, Uri.parse(url)),
                 "应用崩溃，是否发送报告？");
         chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         getContext().startActivity(chooser);
-        mOriginalHandler.uncaughtException(t, cause);
+
+        Process.killProcess(Process.myPid());
     }
 }

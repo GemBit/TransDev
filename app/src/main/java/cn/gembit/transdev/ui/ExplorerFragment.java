@@ -363,6 +363,7 @@ public abstract class ExplorerFragment extends Fragment {
             it.remove();
             mAdapter.notifyItemChanged(position);
         }
+        notifySelectionCountChanged();
     }
 
     private void selectInverse() {

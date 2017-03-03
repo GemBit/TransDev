@@ -4,6 +4,7 @@ import android.content.DialogInterface;
 import android.content.res.ColorStateList;
 import android.os.Bundle;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
@@ -66,6 +67,7 @@ public class TaskActivity extends AppCompatActivity {
                             int first = mManager.findFirstVisibleItemPosition();
                             int end = mManager.findLastVisibleItemPosition();
                             mAdapter.notifyItemRangeChanged(first, end - first + 1);
+
                         }
                     });
                 }
@@ -214,7 +216,7 @@ public class TaskActivity extends AppCompatActivity {
                     holder.mBtnKillTask.setText("已终止");
                 }
 
-                holder.mBtnKillTask.setSupportBackgroundTintList(ColorStateList.valueOf(
+                ViewCompat.setBackgroundTintList(holder.mBtnKillTask, ColorStateList.valueOf(
                         ContextCompat.getColor(TaskActivity.this, R.color.colorBackground)));
                 holder.mBtnKillTask.setEnabled(false);
             }

@@ -2,7 +2,7 @@
 
     <dimen name="waitViewSize">140dp</dimen>
 
-    <dimen name="fabMargin">14dp</dimen>
+    <dimen name="fabGap">14dp</dimen>
     <dimen name="fabNormal">72dp</dimen>
     <dimen name="fabMini">56dp</dimen>
     <dimen name="fabTitleHorizontalPadding">14dp</dimen>

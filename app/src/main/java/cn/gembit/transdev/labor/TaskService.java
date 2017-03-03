@@ -29,10 +29,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import cn.gembit.transdev.R;
-import cn.gembit.transdev.ui.TaskActivity;
 import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
+import cn.gembit.transdev.ui.TaskActivity;
 
 public class TaskService extends Service {
 
@@ -439,6 +439,79 @@ public class TaskService extends Service {
             mTask = task;
         }
 
+        private static boolean connect(final GlobalClipboard.Source.Client clientTypeSrc,
+                                       final GlobalClipboard.Destination.Client clientTypeDest) {
+
+            final boolean[] error = new boolean[2];
+
+            if (clientTypeSrc != null) {
+                new ClientAction() {
+                    @Override
+                    protected Argument onCreateArgument() {
+                        return clientTypeSrc.connectArg;
+                    }
+
+                    @Override
+                    protected void onResultOut(Result result) {
+                        Result.Connect theResult = (Result.Connect) result;
+                        clientTypeSrc.client = theResult.ftpClient;
+                        error[0] = theResult.error;
+                    }
+                }.start(false);
+            }
+
+            if (clientTypeDest != null) {
+                new ClientAction() {
+                    @Override
+                    protected Argument onCreateArgument() {
+                        return clientTypeDest.connectArg;
+                    }
+
+                    @Override
+                    protected void onResultOut(Result result) {
+                        Result.Connect theResult = (Result.Connect) result;
+                        clientTypeDest.client = theResult.ftpClient;
+                        error[1] = theResult.error;
+                    }
+                }.start(false);
+            }
+
+            return !error[0] && !error[1];
+        }
+
+        private static void disconnect(final GlobalClipboard.Source.Client clientTypeSrc,
+                                       final GlobalClipboard.Destination.Client clientTypeDest) {
+            if (clientTypeSrc != null) {
+                new ClientAction() {
+                    @Override
+                    protected Argument onCreateArgument() {
+                        Argument.Disconnect argument = new Argument.Disconnect();
+                        argument.ftpClient = clientTypeSrc.client;
+                        return argument;
+                    }
+
+                    @Override
+                    protected void onResultOut(Result result) {
+                    }
+                }.start(false);
+            }
+
+            if (clientTypeDest != null) {
+                new ClientAction() {
+                    @Override
+                    protected Argument onCreateArgument() {
+                        Argument.Disconnect argument = new Argument.Disconnect();
+                        argument.ftpClient = clientTypeDest.client;
+                        return argument;
+                    }
+
+                    @Override
+                    protected void onResultOut(Result result) {
+                    }
+                }.start(false);
+            }
+        }
+
         @Override
         public void run() {
             boolean srcIsLocal = mTask.source instanceof GlobalClipboard.Source.Local;
@@ -511,79 +584,6 @@ public class TaskService extends Service {
 
             disconnect(clientTypeSrc, clientTypeDest);
             mTask.release();
-        }
-
-        private boolean connect(final GlobalClipboard.Source.Client clientTypeSrc,
-                                final GlobalClipboard.Destination.Client clientTypeDest) {
-
-            final boolean[] error = new boolean[2];
-
-            if (clientTypeSrc != null) {
-                new ClientAction() {
-                    @Override
-                    protected Argument onCreateArgument() {
-                        return clientTypeSrc.connectArg;
-                    }
-
-                    @Override
-                    protected void onResultOut(Result result) {
-                        Result.Connect theResult = (Result.Connect) result;
-                        clientTypeSrc.client = theResult.ftpClient;
-                        error[0] = theResult.error;
-                    }
-                }.start(false);
-            }
-
-            if (clientTypeDest != null) {
-                new ClientAction() {
-                    @Override
-                    protected Argument onCreateArgument() {
-                        return clientTypeDest.connectArg;
-                    }
-
-                    @Override
-                    protected void onResultOut(Result result) {
-                        Result.Connect theResult = (Result.Connect) result;
-                        clientTypeDest.client = theResult.ftpClient;
-                        error[1] = theResult.error;
-                    }
-                }.start(false);
-            }
-
-            return !error[0] && !error[1];
-        }
-
-        private void disconnect(final GlobalClipboard.Source.Client clientTypeSrc,
-                                final GlobalClipboard.Destination.Client clientTypeDest) {
-            if (clientTypeSrc != null) {
-                new ClientAction() {
-                    @Override
-                    protected Argument onCreateArgument() {
-                        Argument.Disconnect argument = new Argument.Disconnect();
-                        argument.ftpClient = clientTypeSrc.client;
-                        return argument;
-                    }
-
-                    @Override
-                    protected void onResultOut(Result result) {
-                    }
-                }.start(false);
-            }
-
-            if (clientTypeDest != null) {
-                new ClientAction() {
-                    @Override
-                    protected Argument onCreateArgument() {
-                        Argument.Disconnect argument = new Argument.Disconnect();
-                        argument.ftpClient = clientTypeDest.client;
-                        return argument;
-                    }
-
-                    @Override
-                    protected void onResultOut(Result result) {
-                    }
-                }.start(false);
-            }
         }
     }
 

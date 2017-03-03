@@ -14,4 +14,11 @@
 # class:
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
-#}
+
+-dontwarn org.apache.**
+-keep class org.apache.** { *;}
+-keep interface org.apache.** { *;}
+
+-dontwarn org.slf4j.**
+-keep class org.slf4j.** { *;}
+-keep interface org.slf4j.** { *;}
