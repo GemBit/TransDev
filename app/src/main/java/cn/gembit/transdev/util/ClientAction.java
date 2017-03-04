@@ -1,4 +1,4 @@
-package cn.gembit.transdev.labor;
+package cn.gembit.transdev.util;
 
 import android.os.Handler;
 
@@ -124,6 +124,7 @@ public abstract class ClientAction {
         }
 
         if (files != null) {
+            result.connectionBroken = false;
             result.allListed = new ArrayList<>(files.length);
             for (FTPFile file : files) {
                 result.allListed.add(new FileMeta(
@@ -131,6 +132,13 @@ public abstract class ClientAction {
                         file.getName(),
                         file.getSize(),
                         file.getTimestamp().getTimeInMillis()));
+            }
+        } else {
+            try {
+                result.connectionBroken =
+                        argument.ftpClient == null || !argument.ftpClient.sendNoOp();
+            } catch (IOException e) {
+                result.connectionBroken = true;
             }
         }
         return result;
@@ -307,6 +315,7 @@ public abstract class ClientAction {
 
         class List implements Result {
             public Collection<FileMeta> allListed;
+            public boolean connectionBroken;
         }
 
         class NewFile implements Result {

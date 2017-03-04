@@ -2,8 +2,8 @@
 <android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:background="?attr/android:colorBackground"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="?attr/android:colorBackground">
 
 
     <android.support.design.widget.AppBarLayout
@@ -18,14 +18,15 @@
             android:id="@+id/fragmentTitle"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:gravity="center"
             android:ellipsize="end"
+            android:gravity="center"
             android:maxLines="1"
             android:textSize="@dimen/mediumTextSize"
             app:layout_scrollFlags="scroll|enterAlways" />
 
-        <cn.gembit.transdev.widgets.PathBar
+        <view
             android:id="@+id/pathBar"
+            class="cn.gembit.transdev.ui.ExplorerFragment$PathBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:scrollbars="none" />

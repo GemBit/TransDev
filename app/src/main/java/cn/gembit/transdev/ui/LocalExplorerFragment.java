@@ -17,8 +17,8 @@ import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FileOpener;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
-import cn.gembit.transdev.labor.GlobalClipboard;
-import cn.gembit.transdev.labor.TaskService;
+import cn.gembit.transdev.util.GlobalClipboard;
+import cn.gembit.transdev.util.TaskService;
 import cn.gembit.transdev.widgets.BottomDialogBuilder;
 import cn.gembit.transdev.widgets.InputDialog;
 
@@ -219,7 +219,7 @@ public class LocalExplorerFragment extends ExplorerFragment {
     }
 
     @Override
-    public void changeDir(FilePath newPath) {
+    protected void changeDir(FilePath newPath) {
         if (newPath == null) {
             return;
         }

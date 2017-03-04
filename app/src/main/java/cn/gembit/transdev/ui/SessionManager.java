@@ -1,5 +1,7 @@
 package cn.gembit.transdev.ui;
 
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -14,6 +16,7 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
+import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.SwitchCompat;
 import android.view.Menu;
@@ -38,16 +41,20 @@ import java.util.Map;
 import cn.gembit.transdev.R;
 import cn.gembit.transdev.addition.MyApp;
 import cn.gembit.transdev.file.FilePath;
-import cn.gembit.transdev.labor.ClientAction;
-import cn.gembit.transdev.labor.ConnectionBroadcast;
-import cn.gembit.transdev.labor.ServerWrapper;
+import cn.gembit.transdev.util.AliveKeeper;
+import cn.gembit.transdev.util.ClientAction;
+import cn.gembit.transdev.util.ConnectionBroadcast;
+import cn.gembit.transdev.util.ServerWrapper;
 import cn.gembit.transdev.widgets.BottomDialogBuilder;
 
-public class NavigationPagerManager implements NavigationView.OnNavigationItemSelectedListener {
+public class SessionManager implements NavigationView.OnNavigationItemSelectedListener {
 
     private final static String[] ENCODINGS;
     private final static Comparator<String> ENCODING_COMPAATOR;
     private final static int DEFAULT_ENCODING_INDEX;
+
+
+    private final static int SERVER_ON_NOTIFICATION_ID = View.generateViewId();
 
     static {
         ENCODINGS = Charset.availableCharsets().keySet().toArray(new String[0]);
@@ -84,8 +91,8 @@ public class NavigationPagerManager implements NavigationView.OnNavigationItemSe
     private LinkedList<ExplorerFragment> mSessionFragments = new LinkedList<>();
 
 
-    public NavigationPagerManager(FragmentManager fm, DrawerLayout drawer,
-                                  ViewPager pager, NavigationView navigation) {
+    public SessionManager(FragmentManager fm, DrawerLayout drawer,
+                          ViewPager pager, NavigationView navigation) {
         mAdapter = new ExplorerPagerAdapter(fm);
         mDrawer = drawer;
         mPager = pager;
@@ -135,8 +142,29 @@ public class NavigationPagerManager implements NavigationView.OnNavigationItemSe
                         buttonView.post(new Runnable() {
                             @Override
                             public void run() {
-                                buttonView.setChecked(mServerBookmark.mServer.getPort() != -1);
+                                boolean stated = mServerBookmark.mServer.getPort() != -1;
+                                buttonView.setChecked(stated);
                                 buttonView.setEnabled(true);
+                                NotificationManager manager = ((NotificationManager)
+                                        mContext.getSystemService(Context.NOTIFICATION_SERVICE));
+                                if (stated) {
+                                    AliveKeeper.keep(mContext, SessionManager.class.getName());
+
+                                    String msg = "访问：ftp://" + mServerBookmark.mServer.getIP() +
+                                            ":" + mServerBookmark.mServer.getPort();
+
+                                    manager.notify(SERVER_ON_NOTIFICATION_ID,
+                                            new NotificationCompat.Builder(mContext)
+                                                    .setSmallIcon(R.drawable.ic_launcher)
+                                                    .setOngoing(true)
+                                                    .setAutoCancel(false)
+                                                    .setContentTitle("文件共享FTP服务器已启动")
+                                                    .setContentText(msg)
+                                                    .build());
+                                } else {
+                                    AliveKeeper.release(SessionManager.class.getName());
+                                    manager.cancel(SERVER_ON_NOTIFICATION_ID);
+                                }
                             }
                         });
                     }
@@ -311,7 +339,8 @@ public class NavigationPagerManager implements NavigationView.OnNavigationItemSe
                     String username = (String) spnSend.getSelectedItem();
                     ServerWrapper.UserMeta userMeta = mServerBookmark.mBookmark.get(username);
                     if (userMeta == null) {
-                        Toast.makeText(mContext, "请先选择账户", Toast.LENGTH_SHORT).show();
+                        tvSend.setText("请先选择账户");
+                        swtSend.performClick();
                         return;
                     }
 
@@ -599,8 +628,6 @@ public class NavigationPagerManager implements NavigationView.OnNavigationItemSe
                             Toast.makeText(mContext, "地址不可为空", Toast.LENGTH_SHORT).show();
                         } else if (port == -1) {
                             Toast.makeText(mContext, "端口必须为数字", Toast.LENGTH_SHORT).show();
-                        } else if (username.isEmpty()) {
-                            Toast.makeText(mContext, "用户名不可为空", Toast.LENGTH_SHORT).show();
                         } else {
 
                             ClientAction.Argument.Connect newConnectArg =

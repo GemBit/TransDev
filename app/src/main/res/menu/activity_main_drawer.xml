@@ -37,7 +37,7 @@
             android:id="@+id/addLocal"
             android:checkable="false"
             android:icon="@drawable/ic_add"
-            android:orderInCategory="5"
+            android:orderInCategory="6"
             android:title="添加路径收藏" />
     </group>
 
@@ -48,7 +48,7 @@
             android:id="@+id/addClient"
             android:checkable="false"
             android:icon="@drawable/ic_add"
-            android:orderInCategory="7"
+            android:orderInCategory="8"
             android:title="添加远程连接" />
     </group>
 
@@ -59,14 +59,14 @@
             android:id="@+id/addServer"
             android:checkable="false"
             android:icon="@drawable/ic_add"
-            android:orderInCategory="9"
+            android:orderInCategory="10"
             android:title="添加共享账户" />
 
         <item
             android:id="@+id/serverStatus"
             android:checkable="false"
             android:icon="@drawable/ic_server_status"
-            android:orderInCategory="10"
+            android:orderInCategory="11"
             android:title="文件共享状态" />
     </group>
 

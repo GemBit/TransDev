@@ -6,14 +6,15 @@ import android.widget.Toast;
 
 import org.apache.commons.net.ftp.FTPClient;
 
+import java.io.IOException;
 import java.util.Collection;
 
 import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
-import cn.gembit.transdev.labor.ClientAction;
-import cn.gembit.transdev.labor.GlobalClipboard;
-import cn.gembit.transdev.labor.TaskService;
+import cn.gembit.transdev.util.ClientAction;
+import cn.gembit.transdev.util.GlobalClipboard;
+import cn.gembit.transdev.util.TaskService;
 import cn.gembit.transdev.widgets.BottomDialogBuilder;
 import cn.gembit.transdev.widgets.InputDialog;
 
@@ -31,6 +32,7 @@ public class ClientExplorerFragment extends ExplorerFragment {
         fragment.mConnectArg = connectArg;
         return fragment;
     }
+
     @Override
     protected void startUp() {
         setTitle(mTitle);
@@ -273,7 +275,7 @@ public class ClientExplorerFragment extends ExplorerFragment {
     }
 
     @Override
-    public void changeDir(final FilePath newPath) {
+    protected void changeDir(final FilePath newPath) {
         if (newPath == null) {
             return;
         }
@@ -297,8 +299,18 @@ public class ClientExplorerFragment extends ExplorerFragment {
                 if (theResult.allListed != null) {
                     notifyDirChanged(newPath, theResult.allListed);
                 } else {
-                    BottomDialogBuilder.make(getContext(),
-                            "无法读取目录").show();
+                    if (theResult.connectionBroken) {
+                        BottomDialogBuilder.make(getContext(), "连接已断开", "重连")
+                                .setOnDismissListener(new DialogInterface.OnDismissListener() {
+                                    @Override
+                                    public void onDismiss(DialogInterface dialog) {
+                                        startUp();
+                                    }
+                                })
+                                .show();
+                    } else {
+                        BottomDialogBuilder.make(getContext(), "无法读取目录").show();
+                    }
                 }
                 lockFragment(false);
             }

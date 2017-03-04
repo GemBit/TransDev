@@ -1,4 +1,4 @@
-package cn.gembit.transdev.labor;
+package cn.gembit.transdev.util;
 
 import org.apache.commons.net.ftp.FTPClient;
 

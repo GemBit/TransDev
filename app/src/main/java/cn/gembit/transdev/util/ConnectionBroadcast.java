@@ -1,4 +1,4 @@
-package cn.gembit.transdev.labor;
+package cn.gembit.transdev.util;
 
 import android.os.Build;
 import android.os.Handler;
@@ -161,13 +161,12 @@ public class ConnectionBroadcast {
                 try {
                     byte[] buffer = new byte[BUFFER_SIZE];
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                    socket.setSoTimeout(250);
+                    socket.setSoTimeout(2500);
 
                     while (sReceiving) {
                         try {
                             socket.receive(packet);
                         } catch (SocketTimeoutException e) {
-                            e.printStackTrace();
                             continue;
                         }
 

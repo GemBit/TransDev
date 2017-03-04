@@ -24,7 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     private final static int PERMISSIONS_REQUEST_CODE = 1;
 
-    private NavigationPagerManager mManager;
+    private SessionManager mManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,7 +75,7 @@ public class MainActivity extends AppCompatActivity {
         }
 
 
-        mManager = new NavigationPagerManager(
+        mManager = new SessionManager(
                 getSupportFragmentManager(),
                 (DrawerLayout) findViewById(R.id.drawerLayout),
                 (ViewPager) findViewById(R.id.viewPager),
@@ -84,7 +84,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public void onBackPressed() {
-            mManager.back();
+        mManager.back();
     }
 
     @Override

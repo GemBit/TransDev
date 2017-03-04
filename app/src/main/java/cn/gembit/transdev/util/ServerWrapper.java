@@ -1,4 +1,4 @@
-package cn.gembit.transdev.labor;
+package cn.gembit.transdev.util;
 
 import android.content.Context;
 import android.content.SharedPreferences;
@@ -115,7 +115,7 @@ public class ServerWrapper {
         return null;
     }
 
-    public int start() {
+    public void start() {
         stop();
 
         FtpServerFactory serverFactory = new FtpServerFactory();
@@ -159,7 +159,8 @@ public class ServerWrapper {
             try {
                 serverFactory.getUserManager().save(user);
             } catch (FtpException e) {
-                return mPort = -1;
+                mPort = -1;
+                return;
             }
         }
 
@@ -174,11 +175,13 @@ public class ServerWrapper {
             mFtpServer = serverFactory.createServer();
             try {
                 mFtpServer.start();
-                return mPort = listenerFactory.getPort();
+                mPort = listenerFactory.getPort();
+                return;
             } catch (FtpServerConfigurationException e1) {
                 listenerFactory.setPort(listenerFactory.getPort() + 1);
             } catch (FtpException e2) {
-                return mPort = -1;
+                mPort = -1;
+                return;
             }
         }
     }

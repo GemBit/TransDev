@@ -23,8 +23,8 @@ import java.util.TimerTask;
 
 import cn.gembit.transdev.R;
 import cn.gembit.transdev.file.FileMeta;
-import cn.gembit.transdev.labor.GlobalClipboard;
-import cn.gembit.transdev.labor.TaskService;
+import cn.gembit.transdev.util.GlobalClipboard;
+import cn.gembit.transdev.util.TaskService;
 import cn.gembit.transdev.widgets.AutoFitRecyclerView;
 
 public class TaskActivity extends AppCompatActivity {
@@ -81,6 +81,12 @@ public class TaskActivity extends AppCompatActivity {
         if (mTimer != null) {
             mTimer.cancel();
         }
+    }
+
+
+    @Override
+    public void onBackPressed() {
+        finish();
     }
 
     private static class ItemViewHolder extends RecyclerView.ViewHolder {
@@ -228,19 +234,24 @@ public class TaskActivity extends AppCompatActivity {
             holder.mTvSizeTotal.setText(FileMeta.formatSize(task.sizeTotal));
             holder.mTvSizeDone.setText(FileMeta.formatSize(task.sizeDone));
 
-            StringBuilder builder = new StringBuilder();
-            if (task.analysisError > 0) {
-                builder.append("\n分析过程出错数：").append(task.analysisError);
-            }
-            if (task.transferError > 0) {
-                builder.append("\n传输过程出错数：").append(task.transferError);
-            }
-            if (task.deletionError > 0) {
-                builder.append("\n删除过程出错数：").append(task.deletionError);
-            }
-            if (builder.length() > 0) {
+            if (task.status == TaskService.Task.STATUS.interrupted) {
                 holder.mTvTaskError.setVisibility(View.VISIBLE);
-                holder.mTvTaskError.setText(builder.substring(1));
+                holder.mTvTaskError.setText("任务被终止");
+            } else {
+                StringBuilder builder = new StringBuilder();
+                if (task.analysisError > 0) {
+                    builder.append("\n分析过程出错数：").append(task.analysisError);
+                }
+                if (task.transferError > 0) {
+                    builder.append("\n传输过程出错数：").append(task.transferError);
+                }
+                if (task.deletionError > 0) {
+                    builder.append("\n删除过程出错数：").append(task.deletionError);
+                }
+                if (builder.length() > 0) {
+                    holder.mTvTaskError.setVisibility(View.VISIBLE);
+                    holder.mTvTaskError.setText(builder.substring(1));
+                }
             }
         }
     }

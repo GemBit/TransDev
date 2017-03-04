@@ -1,4 +1,4 @@
-package cn.gembit.transdev.labor;
+package cn.gembit.transdev.util;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -9,6 +9,7 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
+import android.view.View;
 import android.widget.Toast;
 
 import org.apache.commons.net.ftp.FTPClient;
@@ -36,8 +37,7 @@ import cn.gembit.transdev.ui.TaskActivity;
 
 public class TaskService extends Service {
 
-    private final static int ONGOING_NOTIFICATION_ID = 1;
-    private final static int RESULT_NOTIFICATION_ID = 2;
+    private final static int TASK_NOTIFICATION_ID = View.generateViewId();
 
     private final static List<Task> TASKS = new LinkedList<>();
     private static int sUnfinishedTaskCount = 0;
@@ -63,14 +63,12 @@ public class TaskService extends Service {
     }
 
     private static Notification makeNotification() {
-        boolean finished = sUnfinishedTaskCount == 0;
-
         return new NotificationCompat.Builder(sService)
                 .setSmallIcon(R.drawable.ic_launcher)
-                .setOngoing(!finished)
-                .setAutoCancel(finished)
-                .setContentTitle(finished ? "传输完成" : "正在进行后台传输")
-                .setContentText(finished ? "点击查看" : sUnfinishedTaskCount + "个任务进行中")
+                .setOngoing(true)
+                .setAutoCancel(false)
+                .setContentTitle("正在进行后台传输")
+                .setContentText(sUnfinishedTaskCount + "个任务进行中")
                 .setContentIntent(PendingIntent.getActivity(
                         sService, 0, new Intent(sService, TaskActivity.class), 0))
                 .build();
@@ -122,18 +120,17 @@ public class TaskService extends Service {
                     task.analysisError++;
                     continue;
                 }
-                if (children == null) {
-                    continue;
-                }
-                for (FTPFile child : children) {
-                    task.mSrcPathQueue.add(path.getChild(child.getName()));
-                    if (child.isDirectory()) {
-                        task.mSrcTypeQueue.add(true);
-                        task.dirTotal++;
-                    } else {
-                        task.mSrcTypeQueue.add(false);
-                        task.fileTotal++;
-                        task.sizeTotal += child.getSize();
+                if (children != null) {
+                    for (FTPFile child : children) {
+                        task.mSrcPathQueue.add(path.getChild(child.getName()));
+                        if (child.isDirectory()) {
+                            task.mSrcTypeQueue.add(true);
+                            task.dirTotal++;
+                        } else {
+                            task.mSrcTypeQueue.add(false);
+                            task.fileTotal++;
+                            task.sizeTotal += child.getSize();
+                        }
                     }
                 }
             }
@@ -173,6 +170,10 @@ public class TaskService extends Service {
         FilePath cachedSolutionPath = null;
 
         for (FileMeta meta : task.source.fileMetaCollection) {
+            if (task.status == Task.STATUS.interrupted) {
+                break;
+            }
+
             String name = meta.name;
             if (task.mDestExisted.contains(name)) {
                 GlobalClipboard.NameDuplicateHandler.reset(name);
@@ -187,6 +188,9 @@ public class TaskService extends Service {
         }
 
         for (FilePath srcPath : task.mSrcPathQueue) {
+            if (task.status == Task.STATUS.interrupted) {
+                break;
+            }
 
             FilePath destPath = srcPath.move(task.source.dir, task.destination.dir);
             if (cachedDuplicatedPath != null && cachedDuplicatedPath.cover(destPath)) {
@@ -407,7 +411,14 @@ public class TaskService extends Service {
 
         sService = this;
 
-        startForeground(ONGOING_NOTIFICATION_ID, makeNotification());
+        startForeground(TASK_NOTIFICATION_ID, makeNotification());
+        AliveKeeper.keep(this, TaskService.class.getName());
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        AliveKeeper.release(TaskService.class.getName());
     }
 
     @Nullable
@@ -424,14 +435,12 @@ public class TaskService extends Service {
         }
 
         ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
-                .cancel(RESULT_NOTIFICATION_ID);
-        ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
-                .notify(ONGOING_NOTIFICATION_ID, makeNotification());
+                .notify(TASK_NOTIFICATION_ID, makeNotification());
 
         return super.onStartCommand(intent, flags, startId);
     }
 
-    public static class TaskRunnable implements Runnable {
+    private static class TaskRunnable implements Runnable {
 
         private final Task mTask;
 
@@ -640,12 +649,10 @@ public class TaskService extends Service {
 
             synchronized (TASKS) {
                 if (--sUnfinishedTaskCount == 0) {
-                    ((NotificationManager) sService.getSystemService(Context.NOTIFICATION_SERVICE))
-                            .notify(RESULT_NOTIFICATION_ID, makeNotification());
                     sService.stopSelf();
                 } else {
                     ((NotificationManager) sService.getSystemService(Context.NOTIFICATION_SERVICE))
-                            .notify(ONGOING_NOTIFICATION_ID, makeNotification());
+                            .notify(TASK_NOTIFICATION_ID, makeNotification());
                 }
             }
         }
