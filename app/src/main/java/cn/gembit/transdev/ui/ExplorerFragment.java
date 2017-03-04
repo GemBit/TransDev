@@ -401,165 +401,6 @@ public abstract class ExplorerFragment extends Fragment {
         mAdapter.notifyItemChanged(position);
     }
 
-    private class FileItemView extends RelativeLayout
-            implements View.OnClickListener, View.OnLongClickListener {
-
-        private final ImageView mTypeView;
-        private final TextView mNameView;
-        private final TextView mSizeView;
-        private final TextView mTimeView;
-
-        private RecyclerView.ViewHolder mHolder;
-
-        private FileItemView(Context context) {
-            super(context);
-            inflate(getContext(), R.layout.item_file_list, this);
-            mTypeView = (ImageView) findViewById(R.id.type);
-            mNameView = (TextView) findViewById(R.id.name);
-            mSizeView = (TextView) findViewById(R.id.size);
-            mTimeView = (TextView) findViewById(R.id.time);
-
-            setOnClickListener(this);
-            setOnLongClickListener(this);
-
-            resize(true);
-        }
-
-        private void resize(boolean forced) {
-            ViewGroup.LayoutParams params = mTypeView.getLayoutParams();
-            if (forced || sPictureSize != params.width) {
-                params.width = params.height = sPictureSize;
-                mTypeView.setLayoutParams(params);
-                mNameView.setTextSize(TypedValue.COMPLEX_UNIT_PX, sPictureSize * 0.42f);
-                mSizeView.setTextSize(TypedValue.COMPLEX_UNIT_PX, sPictureSize * 0.24f);
-                mTimeView.setTextSize(TypedValue.COMPLEX_UNIT_PX, sPictureSize * 0.24f);
-            }
-        }
-
-        @Override
-        protected void onLayout(boolean changed, int l, int t, int r, int b) {
-            super.onLayout(changed, l, t, r, b);
-            resize(false);
-        }
-
-        @Override
-        public void onClick(View v) {
-            if (!mLocked) {
-                int position = ((FileItemView) v).mHolder.getAdapterPosition();
-                int selectedCount = mAdapter.mSelectedItems.size();
-                FileMeta meta = mAdapter.mMetaList.get(position);
-                if (selectedCount == 0) {
-                    enter(meta);
-                } else if (selectedCount == 1 && mAdapter.mSelectedItems.containsKey(meta)) {
-                    moreAction(meta);
-                    switchSelectionStatus(position);
-                } else {
-                    switchSelectionStatus(position);
-                }
-            }
-        }
-
-        @Override
-        public boolean onLongClick(View v) {
-            if (!mLocked) {
-                switchSelectionStatus(((FileItemView) v).mHolder.getAdapterPosition());
-            }
-            return true;
-        }
-    }
-
-    private class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
-
-        private List<FileMeta> mMetaList = new ArrayList<>();
-        private Map<FileMeta, Integer> mSelectedItems = new HashMap<>();
-
-        @Override
-        public int getItemCount() {
-            return mMetaList.size();
-        }
-
-        @Override
-        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            return new RecyclerView.ViewHolder(
-                    new FileItemView(getContext())) {
-            };
-        }
-
-        @Override
-        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
-            FileItemView itemView = (FileItemView) holder.itemView;
-            itemView.mHolder = holder;
-
-            FileMeta meta = mMetaList.get(position);
-
-            Bitmap bitmap = ((BitmapDrawable) getIcon(meta)).getBitmap();
-            RoundedBitmapDrawable rid = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
-            rid.setCornerRadius(bitmap.getWidth() * 0.15f);
-            itemView.mTypeView.setImageDrawable(rid);
-
-            itemView.mNameView.setText(meta.name);
-            itemView.mSizeView.setText(meta.size);
-            itemView.mTimeView.setText(meta.time);
-            itemView.setBackgroundColor(mSelectedItems.containsKey(meta) ?
-                    ExplorerFragment.sItemSelectedBackground :
-                    ExplorerFragment.sItemNormalBackground);
-        }
-    }
-
-    private class ScrollToHideFabListener extends RecyclerView.OnScrollListener {
-
-        private final static int DURATION = 1000;
-        private final static int MOVE_SCALE = 3;
-
-        private boolean mMoving;
-        private int mHeight;
-        private int mOffset;
-
-        @Override
-        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-            super.onScrollStateChanged(recyclerView, newState);
-            if (newState == RecyclerView.SCROLL_STATE_DRAGGING && !mMoving) {
-                mMoving = true;
-                mFabMenu.clearAnimation();
-                mHeight = mFabMenu.heightFromScreenBottom();
-                mOffset = 0;
-                if (mFabMenu.getVisibility() != View.VISIBLE) {
-                    mFabMenu.setVisibility(View.VISIBLE);
-                    mFabMenu.offsetTopAndBottom(mHeight);
-                    mOffset += mHeight;
-                }
-            } else if (newState == RecyclerView.SCROLL_STATE_IDLE && mMoving) {
-                mMoving = false;
-                mFabMenu.offsetTopAndBottom(-mOffset);
-                if (mOffset >= mHeight) {
-                    mFabMenu.setVisibility(View.INVISIBLE);
-                } else if (mOffset > 0) {
-                    TranslateAnimation animation = new TranslateAnimation(0f, 0f, mOffset, 0f);
-                    animation.setInterpolator(new OvershootInterpolator());
-                    animation.setDuration(DURATION);
-                    mFabMenu.startAnimation(animation);
-                }
-            }
-        }
-
-        @Override
-        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-            super.onScrolled(recyclerView, dx, dy);
-            dy /= MOVE_SCALE;
-            if (mMoving) {
-                if (dy > 0 && mOffset < mHeight || dy < 0 && mOffset > 0) {
-                    if (mOffset + dy > 0) {
-                        mFabMenu.offsetTopAndBottom(dy);
-                        mOffset += dy;
-                    } else {
-                        mFabMenu.offsetTopAndBottom(-mOffset);
-                        mOffset = 0;
-                    }
-                }
-            }
-        }
-    }
-
     public static class PathBar extends HorizontalScrollView
             implements View.OnClickListener, View.OnLongClickListener {
 
@@ -707,6 +548,171 @@ public abstract class ExplorerFragment extends Fragment {
                     .setPrimaryClip(ClipData.newPlainText(pathString, pathString));
             Toast.makeText(getContext(), "路径已复制" + pathString, Toast.LENGTH_SHORT).show();
             return true;
+        }
+    }
+
+    private class FileItemView extends RelativeLayout
+            implements View.OnClickListener, View.OnLongClickListener {
+
+        private final ImageView mTypeView;
+        private final TextView mNameView;
+        private final TextView mSizeView;
+        private final TextView mTimeView;
+
+        private RecyclerView.ViewHolder mHolder;
+
+        private FileItemView(Context context) {
+            super(context);
+            inflate(getContext(), R.layout.item_file_list, this);
+            mTypeView = (ImageView) findViewById(R.id.type);
+            mNameView = (TextView) findViewById(R.id.name);
+            mSizeView = (TextView) findViewById(R.id.size);
+            mTimeView = (TextView) findViewById(R.id.time);
+
+            mTypeView.setOnClickListener(this);
+            setOnClickListener(this);
+            setOnLongClickListener(this);
+
+            resize(true);
+        }
+
+        private void resize(boolean forced) {
+            ViewGroup.LayoutParams params = mTypeView.getLayoutParams();
+            if (forced || sPictureSize != params.width) {
+                params.width = params.height = sPictureSize;
+                mTypeView.setLayoutParams(params);
+                mNameView.setTextSize(TypedValue.COMPLEX_UNIT_PX, sPictureSize * 0.42f);
+                mSizeView.setTextSize(TypedValue.COMPLEX_UNIT_PX, sPictureSize * 0.24f);
+                mTimeView.setTextSize(TypedValue.COMPLEX_UNIT_PX, sPictureSize * 0.24f);
+            }
+        }
+
+        @Override
+        protected void onLayout(boolean changed, int l, int t, int r, int b) {
+            super.onLayout(changed, l, t, r, b);
+            resize(false);
+        }
+
+        @Override
+        public void onClick(View v) {
+            if (!mLocked) {
+                if(v == mTypeView) {
+                    onLongClick(this);
+                    return;
+                }
+
+                int position = ((FileItemView) v).mHolder.getAdapterPosition();
+                int selectedCount = mAdapter.mSelectedItems.size();
+                FileMeta meta = mAdapter.mMetaList.get(position);
+                if (selectedCount == 0) {
+                    enter(meta);
+                } else if (selectedCount == 1 && mAdapter.mSelectedItems.containsKey(meta)) {
+                    moreAction(meta);
+                    switchSelectionStatus(position);
+                } else {
+                    switchSelectionStatus(position);
+                }
+            }
+        }
+
+        @Override
+        public boolean onLongClick(View v) {
+            if (!mLocked) {
+                switchSelectionStatus(((FileItemView) v).mHolder.getAdapterPosition());
+            }
+            return true;
+        }
+    }
+
+    private class FileListAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+
+        private List<FileMeta> mMetaList = new ArrayList<>();
+        private Map<FileMeta, Integer> mSelectedItems = new HashMap<>();
+
+        @Override
+        public int getItemCount() {
+            return mMetaList.size();
+        }
+
+        @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
+            return new RecyclerView.ViewHolder(
+                    new FileItemView(getContext())) {
+            };
+        }
+
+        @Override
+        public void onBindViewHolder(RecyclerView.ViewHolder holder, int position) {
+            FileItemView itemView = (FileItemView) holder.itemView;
+            itemView.mHolder = holder;
+
+            FileMeta meta = mMetaList.get(position);
+
+            Bitmap bitmap = ((BitmapDrawable) getIcon(meta)).getBitmap();
+            RoundedBitmapDrawable rid = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
+            rid.setCornerRadius(bitmap.getWidth() * 0.15f);
+            itemView.mTypeView.setImageDrawable(rid);
+
+            itemView.mNameView.setText(meta.name);
+            itemView.mSizeView.setText(meta.size);
+            itemView.mTimeView.setText(meta.time);
+            itemView.setBackgroundColor(mSelectedItems.containsKey(meta) ?
+                    ExplorerFragment.sItemSelectedBackground :
+                    ExplorerFragment.sItemNormalBackground);
+        }
+    }
+
+    private class ScrollToHideFabListener extends RecyclerView.OnScrollListener {
+
+        private final static int DURATION = 1000;
+        private final static int MOVE_SCALE = 3;
+
+        private boolean mMoving;
+        private int mHeight;
+        private int mOffset;
+
+        @Override
+        public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
+            super.onScrollStateChanged(recyclerView, newState);
+            if (newState == RecyclerView.SCROLL_STATE_DRAGGING && !mMoving) {
+                mMoving = true;
+                mFabMenu.clearAnimation();
+                mHeight = mFabMenu.heightFromScreenBottom();
+                mOffset = 0;
+                if (mFabMenu.getVisibility() != View.VISIBLE) {
+                    mFabMenu.setVisibility(View.VISIBLE);
+                    mFabMenu.offsetTopAndBottom(mHeight);
+                    mOffset += mHeight;
+                }
+            } else if (newState == RecyclerView.SCROLL_STATE_IDLE && mMoving) {
+                mMoving = false;
+                mFabMenu.offsetTopAndBottom(-mOffset);
+                if (mOffset >= mHeight) {
+                    mFabMenu.setVisibility(View.INVISIBLE);
+                } else if (mOffset > 0) {
+                    TranslateAnimation animation = new TranslateAnimation(0f, 0f, mOffset, 0f);
+                    animation.setInterpolator(new OvershootInterpolator());
+                    animation.setDuration(DURATION);
+                    mFabMenu.startAnimation(animation);
+                }
+            }
+        }
+
+        @Override
+        public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
+            super.onScrolled(recyclerView, dx, dy);
+            dy /= MOVE_SCALE;
+            if (mMoving) {
+                if (dy > 0 && mOffset < mHeight || dy < 0 && mOffset > 0) {
+                    if (mOffset + dy > 0) {
+                        mFabMenu.offsetTopAndBottom(dy);
+                        mOffset += dy;
+                    } else {
+                        mFabMenu.offsetTopAndBottom(-mOffset);
+                        mOffset = 0;
+                    }
+                }
+            }
         }
     }
 }

@@ -187,14 +187,14 @@ public class TaskActivity extends AppCompatActivity {
                 if (task.source instanceof GlobalClipboard.Source.Local) {
                     srcDest += "本地";
                 } else {
-                    srcDest += ((GlobalClipboard.Source.Client) task.source).connectArg.address;
+                    srcDest += ((GlobalClipboard.Source.Client) task.source).connectArg.alias;
                 }
                 srcDest += ":" + task.source.dir.pathString + "】到【";
                 if (task.destination instanceof GlobalClipboard.Destination.Local) {
                     srcDest += "本地";
                 } else {
                     srcDest += ((GlobalClipboard.Destination.Client) task.destination)
-                            .connectArg.address;
+                            .connectArg.alias;
                 }
                 srcDest += ":" + task.destination.dir.pathString + "】";
                 holder.mTvTaskSrcDest.setText(srcDest);

@@ -10,11 +10,10 @@
     <application
         android:name=".addition.MyApp"
         android:allowBackup="false"
-        android:supportsRtl="true"
         android:icon="@drawable/ic_launcher"
         android:label="捷传"
+        android:supportsRtl="true"
         android:theme="@style/AppTheme">
-
         <activity
             android:name=".ui.MainActivity"
             android:configChanges="orientation|screenSize"
@@ -38,7 +37,8 @@
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value=".ui.MainActivity" />
         </activity>
-
+        <activity
+            android:name=".ui.AdditionActivity"/>
     </application>
 
 </manifest>

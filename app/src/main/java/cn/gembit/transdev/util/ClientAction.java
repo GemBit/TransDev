@@ -268,6 +268,7 @@ public abstract class ClientAction {
             public String username;
             public String password;
             public String encoding;
+            public String alias;
         }
 
         class List implements Argument {

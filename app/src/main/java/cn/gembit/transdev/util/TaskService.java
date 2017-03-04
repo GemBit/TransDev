@@ -62,6 +62,10 @@ public class TaskService extends Service {
         return mTasks;
     }
 
+    public static int getUnfinishedTaskCount() {
+        return sUnfinishedTaskCount;
+    }
+
     private static Notification makeNotification() {
         return new NotificationCompat.Builder(sService)
                 .setSmallIcon(R.drawable.ic_launcher)

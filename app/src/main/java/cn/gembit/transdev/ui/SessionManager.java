@@ -1,7 +1,6 @@
 package cn.gembit.transdev.ui;
 
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -45,6 +44,7 @@ import cn.gembit.transdev.util.AliveKeeper;
 import cn.gembit.transdev.util.ClientAction;
 import cn.gembit.transdev.util.ConnectionBroadcast;
 import cn.gembit.transdev.util.ServerWrapper;
+import cn.gembit.transdev.util.TaskService;
 import cn.gembit.transdev.widgets.BottomDialogBuilder;
 
 public class SessionManager implements NavigationView.OnNavigationItemSelectedListener {
@@ -175,6 +175,14 @@ public class SessionManager implements NavigationView.OnNavigationItemSelectedLi
 
         navigation.setNavigationItemSelectedListener(this);
 
+        drawer.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                int count = TaskService.getUnfinishedTaskCount();
+                mTaskManage.setTitle("任务管理" + (count > 0 ? " (" + count + ")" : ""));
+            }
+        });
+
         pager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int position) {
@@ -211,12 +219,8 @@ public class SessionManager implements NavigationView.OnNavigationItemSelectedLi
             back();
 
         } else if (item == mAddition) {
-            new AlertDialog.Builder(mContext)
-                    .setCancelable(false)
-                    .setNegativeButton("取消", null)
-                    .setTitle("我还在赶工")
-                    .setMessage("计划添加换主题，检车跟新，使用说明， 分享应用和开源许可")
-                    .show();
+            mContext.startActivity(new Intent(mContext, AdditionActivity.class));
+            back();
 
         } else if (item == mAddLocal) {
             addOrModifyLocalBookmark(null);
@@ -371,8 +375,8 @@ public class SessionManager implements NavigationView.OnNavigationItemSelectedLi
 
                 ConnectionBroadcast.receiveBroadcast(new ConnectionBroadcast.OnReceivedCallback() {
                     @Override
-                    public void onReceived(final ClientAction.Argument.Connect argument,
-                                           final String deviceName, String brief) {
+                    public void onReceived(
+                            final ClientAction.Argument.Connect argument, String brief) {
                         tvReceive.setText(brief);
 
                         if (argument == null) {
@@ -384,16 +388,16 @@ public class SessionManager implements NavigationView.OnNavigationItemSelectedLi
                         new AlertDialog.Builder(mContext)
                                 .setCancelable(false)
                                 .setTitle("发现设备")
-                                .setMessage(deviceName + "\n地址：" + argument.address)
+                                .setMessage(argument.alias + "\n地址：" + argument.address)
                                 .setNegativeButton("取消", null)
                                 .setPositiveButton("连接", new DialogInterface.OnClickListener() {
                                     @Override
                                     public void onClick(DialogInterface dialog, int which) {
                                         addSession(
                                                 ClientExplorerFragment.newInstance(
-                                                        "远程文件：" + deviceName, argument),
+                                                        "远程文件：" + argument.alias, argument),
                                                 R.drawable.ic_client,
-                                                deviceName);
+                                                argument.alias);
                                         quickConnectDialog.dismiss();
                                     }
                                 })
@@ -587,7 +591,7 @@ public class SessionManager implements NavigationView.OnNavigationItemSelectedLi
             edtPort.setText(String.valueOf(connectArg.port));
             edtUsername.setText(connectArg.username);
             edtPassword.setText(connectArg.password);
-            edtName.setText(oldName);
+            edtName.setText(connectArg.alias);
 
 
             dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(
@@ -637,14 +641,15 @@ public class SessionManager implements NavigationView.OnNavigationItemSelectedLi
                             newConnectArg.port = port;
                             newConnectArg.username = username;
                             newConnectArg.password = password;
+                            newConnectArg.alias = name;
 
-                            if (item == null && mClientBookmark.create(name, newConnectArg)) {
+                            if (item == null && mClientBookmark.create(newConnectArg)) {
                                 Toast.makeText(mContext, "添加成功", Toast.LENGTH_SHORT).show();
                                 addBookmarkMenuItem(R.id.groupClient, name);
                                 dialog.dismiss();
 
                             } else if (item != null &&
-                                    mClientBookmark.modify(oldName, name, newConnectArg)) {
+                                    mClientBookmark.modify(oldName, newConnectArg)) {
                                 Toast.makeText(mContext, "编辑成功", Toast.LENGTH_SHORT).show();
                                 item.setTitle(name);
                                 dialog.dismiss();
@@ -805,20 +810,21 @@ public class SessionManager implements NavigationView.OnNavigationItemSelectedLi
                 connectArg.username = (String) saved.get(name + ".username");
                 connectArg.password = (String) saved.get(name + ".password");
                 connectArg.encoding = (String) saved.get(name + ".encoding");
+                connectArg.alias = name;
             }
         }
 
-        private boolean create(String name, ClientAction.Argument.Connect connectArg) {
-            if (mBookmark.containsKey(name)) {
+        private boolean create(ClientAction.Argument.Connect connectArg) {
+            if (mBookmark.containsKey(connectArg.alias)) {
                 return false;
             }
-            mBookmark.put(name, connectArg);
+            mBookmark.put(connectArg.alias, connectArg);
             MyApp.getContext().getSharedPreferences(BOOKMARK_FILE, Context.MODE_PRIVATE).edit()
-                    .putString(name + ".address", connectArg.address)
-                    .putInt(name + ".port", connectArg.port)
-                    .putString(name + ".username", connectArg.username)
-                    .putString(name + ".password", connectArg.password)
-                    .putString(name + ".encoding", connectArg.encoding)
+                    .putString(connectArg.alias + ".address", connectArg.address)
+                    .putInt(connectArg.alias + ".port", connectArg.port)
+                    .putString(connectArg.alias + ".username", connectArg.username)
+                    .putString(connectArg.alias + ".password", connectArg.password)
+                    .putString(connectArg.alias + ".encoding", connectArg.encoding)
                     .apply();
             return true;
         }
@@ -834,13 +840,13 @@ public class SessionManager implements NavigationView.OnNavigationItemSelectedLi
                     .apply();
         }
 
-        private boolean modify(String oldName, String newName,
-                               ClientAction.Argument.Connect newConnectArg) {
-            if (!newName.equals(oldName) && mBookmark.containsKey(newName)) {
+        private boolean modify(String oldName, ClientAction.Argument.Connect newConnectArg) {
+            if (!newConnectArg.alias.equals(oldName) &&
+                    mBookmark.containsKey(newConnectArg.alias)) {
                 return false;
             } else {
                 remove(oldName);
-                create(newName, newConnectArg);
+                create(newConnectArg);
                 return true;
             }
         }

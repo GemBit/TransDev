@@ -10,7 +10,7 @@
 
     <dimen name="fileListPictureSize">35dp</dimen>
     <dimen name="fileListHorizontalGap">15dp</dimen>
-    <dimen name="fileListVerticalGap">5dp</dimen>
+    <dimen name="fileListVerticalGap">7dp</dimen>
 
 
     <dimen name="smallGap">10dp</dimen>

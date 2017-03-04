@@ -149,7 +149,7 @@ public class ConnectionBroadcast {
                         @Override
                         public void run() {
                             sReceiving = false;
-                            callback.onReceived(null, null, "搜寻失败");
+                            callback.onReceived(null, "搜寻失败");
                         }
                     });
                     return;
@@ -157,7 +157,6 @@ public class ConnectionBroadcast {
 
 
                 final ClientAction.Argument.Connect argument = new ClientAction.Argument.Connect();
-                final String[] deviceName = new String[1];
                 try {
                     byte[] buffer = new byte[BUFFER_SIZE];
                     DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
@@ -180,12 +179,12 @@ public class ConnectionBroadcast {
                         argument.username = dis.readUTF();
                         argument.password = dis.readUTF();
                         argument.encoding = dis.readUTF();
-                        deviceName[0] = dis.readUTF();
+                        argument.alias = dis.readUTF();
 
                         if (received - dis.available() == dis.readInt()) {
                             break;
                         }
-                        deviceName[0] = null;
+                        argument.address = null;
                     }
 
                     handler.post(new Runnable() {
@@ -193,9 +192,8 @@ public class ConnectionBroadcast {
                         public void run() {
                             sReceiving = false;
                             callback.onReceived(
-                                    deviceName[0] != null ? argument : null,
-                                    deviceName[0],
-                                    deviceName[0] != null ? "搜寻结束" : "搜寻中止");
+                                    argument.address != null ? argument : null,
+                                    argument.address != null ? "搜寻结束" : "搜寻中止");
                         }
                     });
 
@@ -204,7 +202,7 @@ public class ConnectionBroadcast {
                         @Override
                         public void run() {
                             sReceiving = false;
-                            callback.onReceived(null, null, "搜寻失败");
+                            callback.onReceived(null, "搜寻失败");
                         }
                     });
                 } finally {
@@ -223,7 +221,7 @@ public class ConnectionBroadcast {
     }
 
     public interface OnReceivedCallback {
-        void onReceived(ClientAction.Argument.Connect argument, String deviceName, String brief);
+        void onReceived(ClientAction.Argument.Connect argument, String brief);
     }
 
     public interface OnSendingStatusChangedCallback {
