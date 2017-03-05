@@ -22,20 +22,18 @@ public class ClientExplorerFragment extends ExplorerFragment {
 
     private FTPClient mClient;
 
-    private String mTitle;
     private ClientAction.Argument.Connect mConnectArg;
 
     public static ClientExplorerFragment newInstance(
             String title, ClientAction.Argument.Connect connectArg) {
         ClientExplorerFragment fragment = new ClientExplorerFragment();
-        fragment.mTitle = title;
+        fragment.setTitle(title);
         fragment.mConnectArg = connectArg;
         return fragment;
     }
 
     @Override
     protected void startUp() {
-        setTitle(mTitle);
         lockFragment(true);
 
         new ClientAction() {
@@ -49,15 +47,16 @@ public class ClientExplorerFragment extends ExplorerFragment {
                 if (getContext() == null) {
                     return;
                 }
+                lockFragment(false);
                 Result.Connect theResult = (Result.Connect) result;
                 if (!theResult.error) {
                     mClient = theResult.ftpClient;
                     setRootDir(null);
-                    changeDir(theResult.initialPath);
+                    FilePath curDir = getCurDir();
+                    changeDir(curDir == null ? theResult.initialPath : curDir);
                 } else {
                     BottomDialogBuilder.make(getContext(), "连接失败").show();
                 }
-                lockFragment(false);
             }
         }.start(true);
     }
@@ -103,13 +102,13 @@ public class ClientExplorerFragment extends ExplorerFragment {
                         if (getContext() == null) {
                             return;
                         }
+                        lockFragment(false);
                         if (((Result.NewFile) result).error) {
                             BottomDialogBuilder.make(getContext(),
                                     isDir ? "新建文件夹失败" : "新建文件失败").show();
                         } else {
                             addItemView(new FileMeta(isDir, input, 0, System.currentTimeMillis()));
                         }
-                        lockFragment(false);
                     }
                 }.start(true);
                 return null;
@@ -143,6 +142,7 @@ public class ClientExplorerFragment extends ExplorerFragment {
                                 if (getContext() == null) {
                                     return;
                                 }
+                                lockFragment(false);
                                 Result.Delete theResult = (Result.Delete) result;
                                 removeItemView(theResult.allDeleted);
                                 int failed = allSelected.size() - theResult.allDeleted.size();
@@ -150,7 +150,6 @@ public class ClientExplorerFragment extends ExplorerFragment {
                                     BottomDialogBuilder.make(getContext(),
                                             "有" + failed + "项删除失败").show();
                                 }
-                                lockFragment(false);
                             }
                         }.start(true);
                     }
@@ -185,12 +184,12 @@ public class ClientExplorerFragment extends ExplorerFragment {
                         if (getContext() == null) {
                             return;
                         }
+                        lockFragment(false);
                         if (((Result.Rename) result).error) {
                             BottomDialogBuilder.make(getContext(), "重命名失败").show();
                         } else {
                             modifyItemView(oldMeta, oldMeta.getRenamed(input));
                         }
-                        lockFragment(false);
                     }
                 }.start(true);
                 return null;
@@ -277,6 +276,7 @@ public class ClientExplorerFragment extends ExplorerFragment {
     @Override
     protected void changeDir(final FilePath newPath) {
         if (newPath == null) {
+            startUp();
             return;
         }
         lockFragment(true);
@@ -295,24 +295,17 @@ public class ClientExplorerFragment extends ExplorerFragment {
                 if (getContext() == null) {
                     return;
                 }
+                lockFragment(false);
                 Result.List theResult = (Result.List) result;
                 if (theResult.allListed != null) {
                     notifyDirChanged(newPath, theResult.allListed);
                 } else {
                     if (theResult.connectionBroken) {
-                        BottomDialogBuilder.make(getContext(), "连接已断开", "重连")
-                                .setOnDismissListener(new DialogInterface.OnDismissListener() {
-                                    @Override
-                                    public void onDismiss(DialogInterface dialog) {
-                                        startUp();
-                                    }
-                                })
-                                .show();
+                        startUp();
                     } else {
                         BottomDialogBuilder.make(getContext(), "无法读取目录").show();
                     }
                 }
-                lockFragment(false);
             }
         }.start(true);
     }

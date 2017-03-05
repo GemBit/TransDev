@@ -24,13 +24,12 @@ import cn.gembit.transdev.widgets.InputDialog;
 
 public class LocalExplorerFragment extends ExplorerFragment {
 
-    private String mTitle;
     private FilePath mRoot;
     private PackageManager mPackageManager;
 
     public static LocalExplorerFragment newInstance(String title, FilePath root) {
         LocalExplorerFragment fragment = new LocalExplorerFragment();
-        fragment.mTitle = title;
+        fragment.setTitle(title);
         fragment.mRoot = root;
         return fragment;
     }
@@ -43,7 +42,6 @@ public class LocalExplorerFragment extends ExplorerFragment {
 
     @Override
     protected void startUp() {
-        setTitle(mTitle);
         setRootDir(mRoot);
         changeDir(mRoot);
     }
@@ -113,13 +111,13 @@ public class LocalExplorerFragment extends ExplorerFragment {
                                 if (getContext() == null) {
                                     return;
                                 }
+                                lockFragment(false);
                                 removeItemView(mDeleted);
                                 int failed = allSelected.size() - mDeleted.size();
                                 if (failed > 0) {
                                     BottomDialogBuilder.make(
                                             getContext(), "有" + failed + "项删除失败").show();
                                 }
-                                lockFragment(false);
                             }
                         }.execute();
                     }

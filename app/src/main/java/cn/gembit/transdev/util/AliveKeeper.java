@@ -12,7 +12,7 @@ public class AliveKeeper {
 
     public static synchronized void keep(Context context, String tag) {
         PowerManager pm = (PowerManager) context.getSystemService(Context.POWER_SERVICE);
-        PowerManager.WakeLock wakeLock = pm.newWakeLock(PowerManager.SCREEN_BRIGHT_WAKE_LOCK, tag);
+        PowerManager.WakeLock wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, tag);
         wakeLock.acquire();
         LOCKS.put(tag, wakeLock);
     }

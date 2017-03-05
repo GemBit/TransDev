@@ -75,7 +75,8 @@ public abstract class ExplorerFragment extends Fragment {
     private View mRootView;
     private AppBarLayout mPathBarLayout;
 
-    private TextView mTitleView;
+    private String mTitle;
+
     private PathBar mPathBar;
     private AutoFitRecyclerView mRecyclerView;
     private FloatingActionButtonMenu mFabMenu;
@@ -153,7 +154,7 @@ public abstract class ExplorerFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_explorer, container, false);
         rootView.setEnabled(false);
 
-        mTitleView = (TextView) rootView.findViewById(R.id.fragmentTitle);
+        ((TextView) rootView.findViewById(R.id.fragmentTitle)).setText(mTitle);
         mPathBarLayout = (AppBarLayout) rootView.findViewById(R.id.pathBarLayout);
         mPathBar = (PathBar) rootView.findViewById(R.id.pathBar);
         mRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
@@ -289,7 +290,11 @@ public abstract class ExplorerFragment extends Fragment {
     }
 
     protected void setTitle(String title) {
-        mTitleView.setText(title);
+        mTitle = title;
+        View view = getView();
+        if (view != null) {
+            ((TextView) view.findViewById(R.id.fragmentTitle)).setText(mTitle);
+        }
     }
 
     protected void lockFragment(boolean toLock) {

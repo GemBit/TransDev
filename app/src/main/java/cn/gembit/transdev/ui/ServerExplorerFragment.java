@@ -22,12 +22,11 @@ public class ServerExplorerFragment extends LocalExplorerFragment {
 
     private ServerWrapper mServer;
 
-    private String mTitle;
     private String mUsername;
 
     public static ServerExplorerFragment newInstance(String title, String username) {
         ServerExplorerFragment fragment = new ServerExplorerFragment();
-        fragment.mTitle = title;
+        fragment.setTitle(title);
         fragment.mUsername = username;
         return fragment;
     }
@@ -39,7 +38,6 @@ public class ServerExplorerFragment extends LocalExplorerFragment {
     @Override
     protected void startUp() {
         mServer = ServerWrapper.getSingleton();
-        setTitle(mTitle);
         setRootDir(mServer.getPhysicalRoot());
         changeDir(getRootDir());
     }

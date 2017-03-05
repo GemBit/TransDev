@@ -22,6 +22,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -74,7 +75,10 @@ public class TaskService extends Service {
                 .setContentTitle("正在进行后台传输")
                 .setContentText(sUnfinishedTaskCount + "个任务进行中")
                 .setContentIntent(PendingIntent.getActivity(
-                        sService, 0, new Intent(sService, TaskActivity.class), 0))
+                        sService,
+                        0,
+                        new Intent(sService, TaskActivity.class),
+                        PendingIntent.FLAG_UPDATE_CURRENT))
                 .build();
     }
 
@@ -467,8 +471,8 @@ public class TaskService extends Service {
                     @Override
                     protected void onResultOut(Result result) {
                         Result.Connect theResult = (Result.Connect) result;
-                        clientTypeSrc.client = theResult.ftpClient;
                         error[0] = theResult.error;
+                        clientTypeSrc.client = theResult.ftpClient;
                     }
                 }.start(false);
             }
@@ -483,8 +487,8 @@ public class TaskService extends Service {
                     @Override
                     protected void onResultOut(Result result) {
                         Result.Connect theResult = (Result.Connect) result;
-                        clientTypeDest.client = theResult.ftpClient;
                         error[1] = theResult.error;
+                        clientTypeDest.client = theResult.ftpClient;
                     }
                 }.start(false);
             }

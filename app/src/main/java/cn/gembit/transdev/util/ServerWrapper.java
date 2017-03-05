@@ -115,7 +115,7 @@ public class ServerWrapper {
         return null;
     }
 
-    public void start() {
+    public synchronized void start() {
         stop();
 
         FtpServerFactory serverFactory = new FtpServerFactory();
@@ -186,7 +186,7 @@ public class ServerWrapper {
         }
     }
 
-    public void stop() {
+    public synchronized void stop() {
         if (mFtpServer != null && !mFtpServer.isStopped()) {
             mFtpServer.stop();
             mPort = -1;
