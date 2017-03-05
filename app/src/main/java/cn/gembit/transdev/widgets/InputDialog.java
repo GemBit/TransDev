@@ -11,6 +11,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import cn.gembit.transdev.R;
+import cn.gembit.transdev.addition.MyApp;
 
 public abstract class InputDialog {
 
@@ -36,7 +37,7 @@ public abstract class InputDialog {
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
         mErrorView = new TextView(context);
-        mErrorView.setTextColor(ContextCompat.getColor(context, R.color.textColorError));
+        mErrorView.setTextColor(MyApp.getColor(context, R.attr.textColorError));
         mErrorView.setTextSize(TypedValue.COMPLEX_UNIT_PX, mediumTextSize);
         container.addView(mErrorView,
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);

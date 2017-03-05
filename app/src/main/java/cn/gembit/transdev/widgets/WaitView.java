@@ -11,6 +11,7 @@ import android.widget.FrameLayout;
 import android.widget.ImageView;
 
 import cn.gembit.transdev.R;
+import cn.gembit.transdev.addition.MyApp;
 
 public class WaitView extends FrameLayout {
 
@@ -50,13 +51,13 @@ public class WaitView extends FrameLayout {
         ImageView background = new ImageView(getContext());
         background.setImageDrawable(
                 ContextCompat.getDrawable(getContext(), R.drawable.ic_wait_background));
-        background.setColorFilter(ContextCompat.getColor(getContext(), R.color.colorAccent));
+        background.setColorFilter(MyApp.getColor(getContext(), R.attr.colorAccent));
         addView(background, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
         ImageView foreground = new ImageView(getContext());
         foreground.setImageDrawable(
                 ContextCompat.getDrawable(getContext(), R.drawable.ic_wait_foreground));
-        foreground.setColorFilter(ContextCompat.getColor(getContext(), R.color.colorPrimary));
+        foreground.setColorFilter(MyApp.getColor(getContext(), R.attr.colorPrimary));
         addView(foreground, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
         mHandler = new Handler();

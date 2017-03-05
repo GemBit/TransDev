@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/activity_task"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
+    android:orientation="vertical"
+    tools:ignore="HardcodedText">
+
+    <android.support.design.widget.AppBarLayout
+        android:id="@+id/pathBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingEnd="@dimen/smallGap"
+        android:paddingStart="@dimen/smallGap">
+
+        <android.support.v7.widget.Toolbar xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/title"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:gravity="center"
+            android:textSize="@dimen/mediumTextSize"
+            app:title="更多" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <ExpandableListView
+        android:id="@+id/additionList"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:childDivider="@android:color/transparent"
+        android:groupIndicator="@null"
+        android:listSelector="@android:color/transparent" />
+
+</LinearLayout>

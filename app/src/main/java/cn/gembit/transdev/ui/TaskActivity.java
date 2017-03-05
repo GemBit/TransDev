@@ -2,8 +2,9 @@ package cn.gembit.transdev.ui;
 
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
@@ -22,6 +23,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import cn.gembit.transdev.R;
+import cn.gembit.transdev.addition.MyApp;
 import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.util.GlobalClipboard;
 import cn.gembit.transdev.util.TaskService;
@@ -37,10 +39,17 @@ public class TaskActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_task);
-        setSupportActionBar((Toolbar) findViewById(R.id.fragmentTitle));
-        ActionBar bar = getSupportActionBar();
-        if (bar != null) {
-            bar.setDisplayHomeAsUpEnabled(true);
+
+        Toolbar toolbar = (Toolbar) findViewById(R.id.title);
+        setSupportActionBar(toolbar);
+        ActionBar actionBar = getSupportActionBar();
+        if (actionBar != null) {
+            actionBar.setDisplayHomeAsUpEnabled(true);
+            Drawable drawable = toolbar.getNavigationIcon();
+            if (drawable != null) {
+                drawable.setColorFilter(MyApp.getColor(this, R.attr.titleTextColor),
+                        PorterDuff.Mode.SRC_ATOP);
+            }
         }
 
         mAdapter = new TaskListAdapter();
@@ -83,11 +92,6 @@ public class TaskActivity extends AppCompatActivity {
         }
     }
 
-
-    @Override
-    public void onBackPressed() {
-        finish();
-    }
 
     private static class ItemViewHolder extends RecyclerView.ViewHolder {
 
@@ -223,7 +227,9 @@ public class TaskActivity extends AppCompatActivity {
                 }
 
                 ViewCompat.setBackgroundTintList(holder.mBtnKillTask, ColorStateList.valueOf(
-                        ContextCompat.getColor(TaskActivity.this, R.color.colorBackground)));
+                        MyApp.getColor(TaskActivity.this, android.R.attr.colorBackground)));
+                holder.mBtnKillTask.setTextColor(MyApp.getColor(TaskActivity.this,
+                        android.R.attr.textColor));
                 holder.mBtnKillTask.setEnabled(false);
             }
 

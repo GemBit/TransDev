@@ -4,6 +4,7 @@
     android:id="@+id/drawerLayout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="?android:attr/colorBackground"
     android:fitsSystemWindows="true">
 
     <FrameLayout
@@ -15,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:scaleType="fitCenter"
-            app:backgroundTint="@color/colorForeground"
+            android:tint="?android:attr/colorForeground"
             app:srcCompat="@drawable/bg_empty"
             tools:ignore="ContentDescription" />
 
@@ -31,9 +32,10 @@
         android:layout_width="wrap_content"
         android:layout_height="match_parent"
         android:layout_gravity="start"
+        android:background="?android:attr/colorBackground"
         android:fitsSystemWindows="false"
-        app:itemIconTint="@color/colorForeground"
-        app:itemTextColor="@color/colorForeground"
+        app:itemIconTint="?android:attr/textColor"
+        app:itemTextColor="?android:attr/colorForeground"
         app:menu="@menu/activity_main_drawer" />
 
 </android.support.v4.widget.DrawerLayout>

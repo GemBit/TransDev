@@ -13,7 +13,7 @@
         android:icon="@drawable/ic_launcher"
         android:label="捷传"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme.Light">
         <activity
             android:name=".ui.MainActivity"
             android:configChanges="orientation|screenSize"
@@ -38,7 +38,15 @@
                 android:value=".ui.MainActivity" />
         </activity>
 
-        <activity android:name=".ui.AdditionActivity" />
+        <activity
+            android:name=".ui.AdditionActivity"
+            android:launchMode="singleTop"
+            android:parentActivityName=".ui.MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.MainActivity" />
+        </activity>
+
     </application>
 
 </manifest>

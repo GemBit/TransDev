@@ -7,7 +7,7 @@ import android.content.SharedPreferences;
 public class Config {
 
     private static SharedPreferences getSharedPreferences(String name) {
-        return MyApp.getContext().getSharedPreferences(name, Context.MODE_PRIVATE);
+        return MyApp.getSharedPreferences(name);
     }
 
     private static SharedPreferences.Editor getSharedPreferencesEditor(String name) {

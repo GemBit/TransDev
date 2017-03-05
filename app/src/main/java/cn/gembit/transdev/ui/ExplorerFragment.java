@@ -45,6 +45,7 @@ import java.util.Map;
 
 import cn.gembit.transdev.R;
 import cn.gembit.transdev.addition.Config;
+import cn.gembit.transdev.addition.MyApp;
 import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
@@ -137,8 +138,8 @@ public abstract class ExplorerFragment extends Fragment {
             sPictureSize = sp.getInt(Config.UIConfig.FILE_LIST_PIC_SIZE,
                     context.getResources().getDimensionPixelSize(R.dimen.fileListPictureSize));
 
-            sItemNormalBackground = ContextCompat.getColor(getContext(), R.color.colorBackground);
-            sItemSelectedBackground = ContextCompat.getColor(getContext(), R.color.colorPrimary);
+            sItemNormalBackground = MyApp.getColor(getContext(), android.R.attr.colorBackground);
+            sItemSelectedBackground = MyApp.getColor(getContext(), R.attr.colorPrimary);
             sItemSelectedBackground = (sItemSelectedBackground & 0x00FFFFFF) | 0x55000000;
         }
     }
@@ -154,7 +155,7 @@ public abstract class ExplorerFragment extends Fragment {
         View rootView = inflater.inflate(R.layout.fragment_explorer, container, false);
         rootView.setEnabled(false);
 
-        ((TextView) rootView.findViewById(R.id.fragmentTitle)).setText(mTitle);
+        ((TextView) rootView.findViewById(R.id.title)).setText(mTitle);
         mPathBarLayout = (AppBarLayout) rootView.findViewById(R.id.pathBarLayout);
         mPathBar = (PathBar) rootView.findViewById(R.id.pathBar);
         mRefreshLayout = (SwipeRefreshLayout) rootView.findViewById(R.id.swipeRefreshLayout);
@@ -293,7 +294,7 @@ public abstract class ExplorerFragment extends Fragment {
         mTitle = title;
         View view = getView();
         if (view != null) {
-            ((TextView) view.findViewById(R.id.fragmentTitle)).setText(mTitle);
+            ((TextView) view.findViewById(R.id.title)).setText(mTitle);
         }
     }
 
@@ -522,6 +523,7 @@ public abstract class ExplorerFragment extends Fragment {
                 directory.setText(names.get(i));
                 directory.setAlpha(NORMAL_ALPHA);
                 directory.setTextSize(TypedValue.COMPLEX_UNIT_PX, mMediumTextSize);
+                directory.setTextColor(MyApp.getColor(getContext(), R.attr.titleTextColor));
                 directory.setBackgroundResource(mTypedValue.resourceId);
                 directory.setPadding(mGap, 0, mGap, 0);
                 directory.setOnClickListener(this);

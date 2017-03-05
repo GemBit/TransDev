@@ -6,10 +6,12 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.res.TypedArray;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Process;
 import android.os.StrictMode;
+import android.util.TypedValue;
 
 import java.io.UnsupportedEncodingException;
 
@@ -17,9 +19,23 @@ import java.io.UnsupportedEncodingException;
 public class MyApp extends Application implements Thread.UncaughtExceptionHandler {
 
     private static MyApp sMyApp;
+    private static TypedValue typedValue = new TypedValue();
 
-    public static Context getContext() {
-        return sMyApp.getApplicationContext();
+    public static SharedPreferences getSharedPreferences(String name) {
+        return sMyApp.getApplicationContext().getSharedPreferences(name, MODE_PRIVATE);
+    }
+
+    public synchronized static int getColor(Context context, int attr) {
+        context.getTheme().resolveAttribute(attr, typedValue, true);
+        return typedValue.data;
+
+//        TypedValue typedValue = new TypedValue();
+//
+//        TypedArray a = context.obtainStyledAttributes(typedValue.data, new int[]{attr});
+//        int color = a.getColor(0, 0);
+//        a.recycle();
+//
+//        return color;
     }
 
     private static String encode(String message) {
@@ -140,7 +156,7 @@ public class MyApp extends Application implements Thread.UncaughtExceptionHandle
         Intent chooser = Intent.createChooser(new Intent(Intent.ACTION_VIEW, Uri.parse(url)),
                 "应用崩溃，是否发送报告？");
         chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        getContext().startActivity(chooser);
+        sMyApp.getApplicationContext().startActivity(chooser);
 
         Process.killProcess(Process.myPid());
     }

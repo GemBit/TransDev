@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="colorAccentDark" format="color" />
+    <attr name="textColorInverse" format="color" />
+    <attr name="textColorError" format="color" />
+</resources>

@@ -8,6 +8,7 @@ import android.view.View;
 import android.widget.TextView;
 
 import cn.gembit.transdev.R;
+import cn.gembit.transdev.addition.MyApp;
 
 public class BottomDialogBuilder {
 
@@ -25,6 +26,7 @@ public class BottomDialogBuilder {
         ((TextView) rootView.findViewById(R.id.message)).setText(message);
         AppCompatButton btnOK = (AppCompatButton) rootView.findViewById(R.id.btnOK);
         btnOK.setText(buttonText);
+        btnOK.setTextColor(MyApp.getColor(context, R.attr.titleTextColor));
         btnOK.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

@@ -365,25 +365,24 @@ public class ServerWrapper {
 
     private static class ConfigSaver {
 
-        private static final String USERS_CONFIG_FILE = "ServerConfig.users";
-        private static final String MAP_CONFIG_FILE = "ServerConfig.map";
+        private static final String USERS_CONFIG_FILE = "ServerBookmark.Users";
+        private static final String MAP_CONFIG_FILE = "ServerBookmark.PathMap";
 
         private static void createUser(UserMeta meta) {
             String writable = meta.writable ? "1" : "0";
             String confined = meta.confined ? "1" : "0";
             String password = meta.password == null ? "" : meta.password;
-            MyApp.getContext().getSharedPreferences(USERS_CONFIG_FILE, Context.MODE_PRIVATE).edit()
+            MyApp.getSharedPreferences(USERS_CONFIG_FILE).edit()
                     .putString(meta.username, writable + confined + password)
                     .apply();
         }
 
         private static void removeUser(String username) {
-            MyApp.getContext().getSharedPreferences(USERS_CONFIG_FILE, Context.MODE_PRIVATE).edit()
+            MyApp.getSharedPreferences(USERS_CONFIG_FILE).edit()
                     .remove(username)
                     .apply();
 
-            SharedPreferences preferences =
-                    MyApp.getContext().getSharedPreferences(MAP_CONFIG_FILE, Context.MODE_PRIVATE);
+            SharedPreferences preferences = MyApp.getSharedPreferences(MAP_CONFIG_FILE);
             SharedPreferences.Editor editor = preferences.edit();
             for (String key : preferences.getAll().keySet()) {
                 if (key.lastIndexOf('/') == username.length()) {
@@ -394,22 +393,20 @@ public class ServerWrapper {
         }
 
         private static void createRecord(String username, FilePath originalPath, FilePath mappedPath) {
-            MyApp.getContext().getSharedPreferences(MAP_CONFIG_FILE, Context.MODE_PRIVATE).edit()
+            MyApp.getSharedPreferences(MAP_CONFIG_FILE).edit()
                     .putString(username + mappedPath.pathString, originalPath.pathString)
                     .apply();
         }
 
         private static void removeRecord(String username, FilePath mappedPath) {
-            MyApp.getContext().getSharedPreferences(MAP_CONFIG_FILE, Context.MODE_PRIVATE).edit()
+            MyApp.getSharedPreferences(MAP_CONFIG_FILE).edit()
                     .remove(username + mappedPath.pathString)
                     .apply();
         }
 
         private static void restoreAllUsers() {
-            Map<String, ?> users = MyApp.getContext()
-                    .getSharedPreferences(USERS_CONFIG_FILE, Context.MODE_PRIVATE).getAll();
-            Map<String, ?> map = MyApp.getContext()
-                    .getSharedPreferences(MAP_CONFIG_FILE, Context.MODE_PRIVATE).getAll();
+            Map<String, ?> users = MyApp.getSharedPreferences(USERS_CONFIG_FILE).getAll();
+            Map<String, ?> map = MyApp.getSharedPreferences(MAP_CONFIG_FILE).getAll();
 
             for (String username : users.keySet()) {
                 String info = (String) users.get(username);

@@ -15,9 +15,10 @@
         app:elevation="0dp">
 
         <TextView
-            android:id="@+id/fragmentTitle"
+            android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
+            android:textColor="?attr/titleTextColor"
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"

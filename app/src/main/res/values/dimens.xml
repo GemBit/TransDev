@@ -13,6 +13,7 @@
     <dimen name="fileListVerticalGap">7dp</dimen>
 
 
+    <dimen name="microGap">5dp</dimen>
     <dimen name="smallGap">10dp</dimen>
     <dimen name="mediumGap">20dp</dimen>
     <dimen name="largeGap">30dp</dimen>

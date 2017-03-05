@@ -8,10 +8,11 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.graphics.PorterDuff;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Environment;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.design.widget.NavigationView;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.FragmentManager;
@@ -28,8 +29,6 @@ import android.support.v7.widget.SwitchCompat;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -75,16 +74,15 @@ public class MainActivity extends AppCompatActivity
                 return o1.compareToIgnoreCase(o2);
             }
         };
-        DEFAULT_ENCODING_INDEX = Arrays.binarySearch(ENCODINGS, "UTF-8", ENCODING_COMPARATOR);
+
+        DEFAULT_ENCODING_INDEX =
+                Math.max(0, Arrays.binarySearch(ENCODINGS, "UTF-8", ENCODING_COMPARATOR));
     }
 
     private ExplorerPagerAdapter mAdapter;
     private ViewPager mPager;
     private DrawerLayout mDrawer;
-
-    private LocalBookmark mLocalBookmark;
-    private ClientBookmark mClientBookmark;
-    private ServerBookmark mServerBookmark;
+    private SwitchCompat mSwtServer;
 
     private Menu mMenu;
     private MenuItem mTaskManage;
@@ -197,143 +195,6 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    public void init() {
-        mAdapter = new ExplorerPagerAdapter(getSupportFragmentManager());
-        mDrawer = (DrawerLayout) findViewById(R.id.drawerLayout);
-        mPager = (ViewPager) findViewById(R.id.viewPager);
-        NavigationView navigation = ((NavigationView) findViewById(R.id.navView));
-
-        mPager.setAdapter(mAdapter);
-
-        mLocalBookmark = new LocalBookmark();
-        mClientBookmark = new ClientBookmark();
-        mServerBookmark = new ServerBookmark();
-
-        mMenu = navigation.getMenu();
-        mTaskManage = mMenu.findItem(R.id.taskManage);
-        mQuickConnect = mMenu.findItem(R.id.quickConnect);
-        mAddition = mMenu.findItem(R.id.addition);
-        mAddLocal = mMenu.findItem(R.id.addLocal);
-        mAddClient = mMenu.findItem(R.id.addClient);
-        mAddServer = mMenu.findItem(R.id.addServer);
-        mServerStatus = mMenu.findItem(R.id.serverStatus);
-
-
-        for (String key : mLocalBookmark.mBookmark.keySet()) {
-            addBookmarkMenuItem(R.id.groupLocal, key);
-        }
-        for (String key : mClientBookmark.mBookmark.keySet()) {
-            addBookmarkMenuItem(R.id.groupClient, key);
-        }
-        for (String key : mServerBookmark.mBookmark.keySet()) {
-            addBookmarkMenuItem(R.id.groupServer, key);
-        }
-
-        SwitchCompat switchCompat = new SwitchCompat(this);
-        switchCompat.setChecked(false);
-        switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
-                buttonView.setEnabled(false);
-                new Thread(new Runnable() {
-                    @Override
-                    public void run() {
-                        if (isChecked) {
-                            mServerBookmark.mServer.start();
-                        } else {
-                            mServerBookmark.mServer.stop();
-                        }
-                        buttonView.post(new Runnable() {
-                            @Override
-                            public void run() {
-                                boolean stated = mServerBookmark.mServer.getPort() != -1;
-                                buttonView.setChecked(stated);
-                                buttonView.setEnabled(true);
-                                NotificationManager manager = ((NotificationManager)
-                                        getSystemService(Context.NOTIFICATION_SERVICE));
-                                if (stated) {
-                                    AliveKeeper.keep(MainActivity.this, MainActivity.class.getName());
-
-                                    String msg = "访问：ftp://" + mServerBookmark.mServer.getIP() +
-                                            ":" + mServerBookmark.mServer.getPort();
-
-                                    Intent intent =
-                                            new Intent(MainActivity.this, MainActivity.class)
-                                            .putExtra(ServerWrapper.class.getName(), true);
-                                    PendingIntent pendingIntent = PendingIntent.getActivity(
-                                            MainActivity.this,
-                                            0,
-                                            intent,
-                                            PendingIntent.FLAG_UPDATE_CURRENT);
-                                    manager.notify(SERVER_ON_NOTIFICATION_ID,
-                                            new NotificationCompat.Builder(MainActivity.this)
-                                                    .setSmallIcon(R.drawable.ic_launcher)
-                                                    .setOngoing(true)
-                                                    .setAutoCancel(false)
-                                                    .setContentTitle("文件共享FTP服务器已启动")
-                                                    .setContentText(msg)
-                                                    .setContentIntent(pendingIntent)
-                                                    .build());
-                                } else {
-                                    AliveKeeper.release(MainActivity.class.getName());
-                                    manager.cancel(SERVER_ON_NOTIFICATION_ID);
-                                }
-                            }
-                        });
-                    }
-                }).start();
-            }
-        });
-        mServerStatus.setActionView(switchCompat);
-
-        navigation.setNavigationItemSelectedListener(this);
-
-        mDrawer.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
-            @Override
-            public void onDrawerOpened(View drawerView) {
-                int count = TaskService.getUnfinishedTaskCount();
-                mTaskManage.setTitle("任务管理" + (count > 0 ? " (" + count + ")" : ""));
-            }
-        });
-
-        mPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
-            @Override
-            public void onPageSelected(int position) {
-                mSessionMenuItems.get(position).setChecked(true);
-            }
-        });
-
-        addSession(
-                LocalExplorerFragment.newInstance("本地文件：默认存储器",
-                        new FilePath(Environment.getExternalStorageDirectory().getPath())),
-                R.drawable.ic_local,
-                "默认存储器");
-    }
-
-    private void checkIntent(Intent intent) {
-        if (intent.getBooleanExtra(ServerWrapper.class.getName(), false)) {
-            new AlertDialog.Builder(this)
-                    .setCancelable(false)
-                    .setMessage("message")
-                    .setTitle("title")
-                    .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            ServerWrapper.getSingleton().stop();
-                        }
-                    })
-                    .show();
-        }
-    }
-
-    private boolean closeDrawer() {
-        if (mDrawer.isDrawerOpen(GravityCompat.START)) {
-            mDrawer.closeDrawer(GravityCompat.START);
-            return true;
-        }
-        return false;
-    }
-
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
         if (item == mTaskManage) {
@@ -359,11 +220,11 @@ public class MainActivity extends AppCompatActivity
 
         } else if (item == mServerStatus) {
             String msg;
-            int port = mServerBookmark.mServer.getPort();
+            int port = ServerBookmark.mServer.getPort();
             if (port == -1) {
                 msg = "未开启";
             } else {
-                msg = "IP地址：" + mServerBookmark.mServer.getIP();
+                msg = "IP地址：" + ServerBookmark.mServer.getIP();
                 msg += "\n端口" + port;
             }
             new AlertDialog.Builder(this)
@@ -380,7 +241,7 @@ public class MainActivity extends AppCompatActivity
                 case R.id.groupLocal:
                     addSession(
                             LocalExplorerFragment.newInstance("本地文件：" + name,
-                                    mLocalBookmark.mBookmark.get(name)),
+                                    LocalBookmark.mMap.get(name)),
                             R.drawable.ic_local,
                             name);
                     break;
@@ -388,13 +249,13 @@ public class MainActivity extends AppCompatActivity
                 case R.id.groupClient:
                     addSession(
                             ClientExplorerFragment.newInstance("远程文件：" + name,
-                                    mClientBookmark.mBookmark.get(name)),
+                                    ClientBookmark.mMap.get(name)),
                             R.drawable.ic_client,
                             name);
                     break;
 
                 case R.id.groupServer:
-                    if (!mServerBookmark.mBookmark.get(name).confined) {
+                    if (!ServerBookmark.mMap.get(name).confined) {
                         BottomDialogBuilder.make(this,
                                 "此账号具有全局访问权限，不可对其选择共享的文件").show();
                         break;
@@ -418,6 +279,145 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
+    public void init() {
+        mAdapter = new ExplorerPagerAdapter(getSupportFragmentManager());
+        mDrawer = (DrawerLayout) findViewById(R.id.drawerLayout);
+        mPager = (ViewPager) findViewById(R.id.viewPager);
+        NavigationView navigation = ((NavigationView) findViewById(R.id.navView));
+
+        mPager.setAdapter(mAdapter);
+
+        mMenu = navigation.getMenu();
+        mTaskManage = mMenu.findItem(R.id.taskManage);
+        mQuickConnect = mMenu.findItem(R.id.quickConnect);
+        mAddition = mMenu.findItem(R.id.addition);
+        mAddLocal = mMenu.findItem(R.id.addLocal);
+        mAddClient = mMenu.findItem(R.id.addClient);
+        mAddServer = mMenu.findItem(R.id.addServer);
+        mServerStatus = mMenu.findItem(R.id.serverStatus);
+
+        LocalBookmark.restore(this);
+        ClientBookmark.restore(this);
+        ServerBookmark.restore(this);
+
+        mSwtServer = new SwitchCompat(this);
+        mSwtServer.setChecked(false);
+        mSwtServer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(final CompoundButton buttonView, final boolean isChecked) {
+                buttonView.setEnabled(false);
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (isChecked) {
+                            ServerBookmark.mServer.start();
+                        } else {
+                            ServerBookmark.mServer.stop();
+                        }
+
+                        buttonView.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                boolean stated = ServerBookmark.mServer.getPort() != -1;
+                                buttonView.setChecked(stated);
+                                buttonView.setEnabled(true);
+                                onServerStatusChanged(stated);
+                            }
+                        });
+                    }
+                }).start();
+            }
+        });
+        mServerStatus.setActionView(mSwtServer);
+
+        navigation.setNavigationItemSelectedListener(this);
+
+        mDrawer.addDrawerListener(new DrawerLayout.SimpleDrawerListener() {
+            @Override
+            public void onDrawerOpened(View drawerView) {
+                int count = TaskService.getUnfinishedTaskCount();
+                mTaskManage.setTitle("任务管理" + (count > 0 ? " (" + count + ")" : ""));
+                mSwtServer.setChecked(ServerBookmark.mServer.getPort() != -1);
+            }
+
+            @Override
+            public void onDrawerStateChanged(int newState) {
+                super.onDrawerStateChanged(newState);
+            }
+        });
+
+        mPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
+            @Override
+            public void onPageSelected(int position) {
+                mSessionMenuItems.get(position).setChecked(true);
+            }
+        });
+
+        addSession(
+                LocalExplorerFragment.newInstance("本地文件：默认存储器",
+                        new FilePath(Environment.getExternalStorageDirectory().getPath())),
+                R.drawable.ic_local,
+                "默认存储器");
+    }
+
+    private void checkIntent(Intent intent) {
+        if (intent.getBooleanExtra(ServerWrapper.class.getName(), false)) {
+            new AlertDialog.Builder(this)
+                    .setCancelable(false)
+                    .setMessage("文件共享FTP服务器运行中")
+                    .setTitle("停止服务器?")
+                    .setPositiveButton("停止", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mSwtServer.setChecked(false);
+                        }
+                    })
+                    .setNegativeButton("取消", null)
+                    .show();
+        }
+    }
+
+    private void onServerStatusChanged(boolean stated) {
+        NotificationManager manager = ((NotificationManager)
+                getSystemService(Context.NOTIFICATION_SERVICE));
+
+        if (stated) {
+            AliveKeeper.keep(this, MainActivity.class.getName());
+
+            String msg = "访问：ftp://" + ServerBookmark.mServer.getIP() +
+                    ":" + ServerBookmark.mServer.getPort();
+
+            manager.notify(SERVER_ON_NOTIFICATION_ID, new NotificationCompat.Builder(this)
+                    .setSmallIcon(R.drawable.ic_launcher)
+                    .setOngoing(true)
+                    .setAutoCancel(false)
+                    .setContentTitle("文件共享FTP服务器运行中")
+                    .setContentText(msg)
+                    .setContentIntent(PendingIntent.getActivity(
+                            this,
+                            0,
+                            new Intent(this, MainActivity.class)
+                                    .putExtra(ServerWrapper.class.getName(), true),
+                            PendingIntent.FLAG_UPDATE_CURRENT))
+                    .build());
+        } else {
+            AliveKeeper.release(MainActivity.class.getName());
+            manager.cancel(SERVER_ON_NOTIFICATION_ID);
+        }
+    }
+
+    private boolean closeDrawer() {
+        if (mDrawer.isDrawerOpen(GravityCompat.START)) {
+            mDrawer.closeDrawer(GravityCompat.START);
+            return true;
+        }
+        return false;
+    }
+
+    private void toast(String msg) {
+        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
+    }
+
     private void quickConnect() {
         final View view = View.inflate(this, R.layout.dialog_quick_connect, null);
 
@@ -435,17 +435,13 @@ public class MainActivity extends AppCompatActivity
                 .setNegativeButton("退出", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (swtSend.isChecked()) {
-                            swtSend.performClick();
-                        }
-                        if (swtReceive.isChecked()) {
-                            swtReceive.performClick();
-                        }
+                        swtSend.setChecked(false);
+                        swtReceive.setChecked(false);
                     }
                 })
                 .show();
 
-        if (mServerBookmark.mServer.getPort() == -1) {
+        if (ServerBookmark.mServer.getPort() == -1) {
             tvSend.setText("开启文件共享后方可启用广播");
             spnSend.setEnabled(false);
             swtSend.setEnabled(false);
@@ -454,7 +450,7 @@ public class MainActivity extends AppCompatActivity
             tvSend.setText("广播未开启");
             spnSend.setAdapter(new ArrayAdapter<>(this,
                     R.layout.support_simple_spinner_dropdown_item,
-                    mServerBookmark.mBookmark.keySet().toArray(new String[0])));
+                    ServerBookmark.mMap.keySet().toArray(new String[0])));
 
             swtSend.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
                 @Override
@@ -467,7 +463,7 @@ public class MainActivity extends AppCompatActivity
                     }
 
                     String username = (String) spnSend.getSelectedItem();
-                    ServerWrapper.UserMeta userMeta = mServerBookmark.mBookmark.get(username);
+                    ServerWrapper.UserMeta userMeta = ServerBookmark.mMap.get(username);
                     if (userMeta == null) {
                         tvSend.setText("请先选择账户");
                         swtSend.performClick();
@@ -538,7 +534,10 @@ public class MainActivity extends AppCompatActivity
         final MenuItem item;
 
         ImageView imageView = new ImageView(this);
-        imageView.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_close));
+        Drawable drawable = ContextCompat.getDrawable(this, R.drawable.ic_close);
+        drawable.setColorFilter(MyApp.getColor(this, android.R.attr.textColor),
+                PorterDuff.Mode.SRC_ATOP);
+        imageView.setImageDrawable(drawable);
 
         item = mMenu.add(
                 R.id.groupSession, View.generateViewId(), mAddition.getOrder() + 1, menuItemTitle)
@@ -573,8 +572,12 @@ public class MainActivity extends AppCompatActivity
 
     private void addBookmarkMenuItem(int grpId, String name) {
         final MenuItem item;
+
         ImageView imageView = new ImageView(this);
-        imageView.setImageDrawable(ContextCompat.getDrawable(this, R.drawable.ic_config));
+        Drawable drawable = ContextCompat.getDrawable(this, R.drawable.ic_config);
+        drawable.setColorFilter(MyApp.getColor(this, android.R.attr.textColor),
+                PorterDuff.Mode.SRC_ATOP);
+        imageView.setImageDrawable(drawable);
 
         switch (grpId) {
             case R.id.groupLocal:
@@ -638,12 +641,12 @@ public class MainActivity extends AppCompatActivity
 
         if (oldName != null) {
             edtName.setText(oldName);
-            edtRoot.setText(mLocalBookmark.mBookmark.get(oldName).pathString);
+            edtRoot.setText(LocalBookmark.mMap.get(oldName).pathString);
             dialog.getButton(DialogInterface.BUTTON_NEUTRAL).setOnClickListener(
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            mLocalBookmark.remove(oldName);
+                            LocalBookmark.remove(oldName);
                             mMenu.removeItem(item.getItemId());
                             dialog.dismiss();
                         }
@@ -659,25 +662,25 @@ public class MainActivity extends AppCompatActivity
                         String name = edtName.getText().toString();
                         String root = edtRoot.getText().toString();
                         if (name.isEmpty()) {
-                            Toast.makeText(MainActivity.this, "名称不可为空", Toast.LENGTH_SHORT).show();
+                            toast("名称不可为空");
                         } else if (root.isEmpty()) {
-                            Toast.makeText(MainActivity.this, "路径不可为空", Toast.LENGTH_SHORT).show();
+                            toast("路径不可为空");
 
                         } else {
 
-                            if (item == null && mLocalBookmark.create(name, new FilePath(root))) {
-                                Toast.makeText(MainActivity.this, "添加成功", Toast.LENGTH_SHORT).show();
+                            if (item == null && LocalBookmark.create(name, new FilePath(root))) {
+                                toast("添加成功");
                                 addBookmarkMenuItem(R.id.groupLocal, name);
                                 dialog.dismiss();
 
                             } else if (item != null &&
-                                    mLocalBookmark.modify(oldName, name, new FilePath(root))) {
-                                Toast.makeText(MainActivity.this, "编辑成功", Toast.LENGTH_SHORT).show();
+                                    LocalBookmark.modify(oldName, name, new FilePath(root))) {
+                                toast("编辑成功");
                                 item.setTitle(name);
                                 dialog.dismiss();
 
                             } else {
-                                Toast.makeText(MainActivity.this, "名称已使用", Toast.LENGTH_SHORT).show();
+                                toast("名称已使用");
                             }
                         }
                     }
@@ -707,7 +710,7 @@ public class MainActivity extends AppCompatActivity
                 this, R.layout.support_simple_spinner_dropdown_item, ENCODINGS));
 
         if (item != null) {
-            ClientAction.Argument.Connect connectArg = mClientBookmark.mBookmark.get(oldName);
+            ClientAction.Argument.Connect connectArg = ClientBookmark.mMap.get(oldName);
 
             int index = Arrays.binarySearch(ENCODINGS, connectArg.encoding, ENCODING_COMPARATOR);
             if (index >= 0) {
@@ -724,7 +727,7 @@ public class MainActivity extends AppCompatActivity
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            mClientBookmark.remove(oldName);
+                            ClientBookmark.remove(oldName);
                             mMenu.removeItem(item.getItemId());
                             dialog.dismiss();
                         }
@@ -755,9 +758,9 @@ public class MainActivity extends AppCompatActivity
                         }
 
                         if (address.isEmpty()) {
-                            Toast.makeText(MainActivity.this, "地址不可为空", Toast.LENGTH_SHORT).show();
+                            toast("地址不可为空");
                         } else if (port == -1) {
-                            Toast.makeText(MainActivity.this, "端口必须为数字", Toast.LENGTH_SHORT).show();
+                            toast("端口必须为数字");
                         } else {
 
                             ClientAction.Argument.Connect newConnectArg =
@@ -769,19 +772,19 @@ public class MainActivity extends AppCompatActivity
                             newConnectArg.password = password;
                             newConnectArg.alias = name;
 
-                            if (item == null && mClientBookmark.create(newConnectArg)) {
-                                Toast.makeText(MainActivity.this, "添加成功", Toast.LENGTH_SHORT).show();
+                            if (item == null && ClientBookmark.create(newConnectArg)) {
+                                toast("添加成功");
                                 addBookmarkMenuItem(R.id.groupClient, name);
                                 dialog.dismiss();
 
                             } else if (item != null &&
-                                    mClientBookmark.modify(oldName, newConnectArg)) {
-                                Toast.makeText(MainActivity.this, "编辑成功", Toast.LENGTH_SHORT).show();
+                                    ClientBookmark.modify(oldName, newConnectArg)) {
+                                toast("编辑成功");
                                 item.setTitle(name);
                                 dialog.dismiss();
 
                             } else {
-                                Toast.makeText(MainActivity.this, "名称已使用", Toast.LENGTH_SHORT).show();
+                                toast("名称已使用");
                             }
                         }
                     }
@@ -807,7 +810,7 @@ public class MainActivity extends AppCompatActivity
                 .show();
 
         if (item != null) {
-            ServerWrapper.UserMeta meta = mServerBookmark.mBookmark.get(oldName);
+            ServerWrapper.UserMeta meta = ServerBookmark.mMap.get(oldName);
 
             edtUsername.setText(meta.username);
             edtPassword.setText(meta.password);
@@ -818,7 +821,7 @@ public class MainActivity extends AppCompatActivity
                     new View.OnClickListener() {
                         @Override
                         public void onClick(View v) {
-                            mServerBookmark.remove(oldName);
+                            ServerBookmark.remove(MainActivity.this, oldName);
                             mMenu.removeItem(item.getItemId());
                             dialog.dismiss();
                         }
@@ -837,30 +840,30 @@ public class MainActivity extends AppCompatActivity
                         boolean confined = chkConfined.isChecked();
 
                         if (username.isEmpty()) {
-                            Toast.makeText(MainActivity.this, "用户名不可为空", Toast.LENGTH_SHORT).show();
+                            toast("用户名不可为空");
                         } else if (username.equals("anonymous") && !password.isEmpty()) {
                             edtPassword.setText("");
-                            Toast.makeText(MainActivity.this, "匿名账户无需密码", Toast.LENGTH_SHORT).show();
+                            toast("匿名账户无需密码");
 
                         } else {
 
                             ServerWrapper.UserMeta newMeta = new ServerWrapper.UserMeta(
                                     username, password, writable, confined);
 
-                            if (item == null && mServerBookmark.create(newMeta)) {
-                                Toast.makeText(MainActivity.this, "添加成功", Toast.LENGTH_SHORT).show();
+                            if (item == null && ServerBookmark.create(newMeta)) {
+                                toast("添加成功");
                                 addBookmarkMenuItem(R.id.groupServer, username);
                                 dialog.dismiss();
 
-                            } else if (item != null && mServerBookmark.modify(oldName, newMeta)) {
-                                Toast.makeText(MainActivity.this,
-                                        "编辑成功，需要重启服务器生效", Toast.LENGTH_SHORT).show();
+                            } else if (item != null &&
+                                    ServerBookmark.modify(MainActivity.this, oldName, newMeta)) {
+                                toast("编辑成功，需要重启服务器生效");
                                 item.setTitle(username);
                                 dialog.dismiss();
 
 
                             } else {
-                                Toast.makeText(MainActivity.this, "用户名已使用", Toast.LENGTH_SHORT).show();
+                                toast("用户名已使用");
                             }
                         }
                     }
@@ -868,13 +871,14 @@ public class MainActivity extends AppCompatActivity
     }
 
 
-    private class LocalBookmark {
+    private static class LocalBookmark {
         private final static String BOOKMARK_FILE = "LocalBookmark";
-        private final Map<String, FilePath> mBookmark = new HashMap<>();
+        private static Map<String, FilePath> mMap;
 
-        private LocalBookmark() {
-            SharedPreferences preferences = MyApp.getContext()
-                    .getSharedPreferences(BOOKMARK_FILE, Context.MODE_PRIVATE);
+        private static void restore(MainActivity activity) {
+            mMap = new HashMap<>();
+
+            SharedPreferences preferences = MyApp.getSharedPreferences(BOOKMARK_FILE);
             Map<String, ?> saved = preferences.getAll();
 
             final String hasWritten = "hasWritten";
@@ -886,31 +890,32 @@ public class MainActivity extends AppCompatActivity
 
             for (String key : saved.keySet()) {
                 if (!key.equals(hasWritten)) {
-                    mBookmark.put(key, new FilePath((String) saved.get(key)));
+                    mMap.put(key, new FilePath((String) saved.get(key)));
+                    activity.addBookmarkMenuItem(R.id.groupLocal, key);
                 }
             }
         }
 
-        private boolean create(String name, FilePath root) {
-            if (mBookmark.containsKey(name)) {
+        private static boolean create(String name, FilePath root) {
+            if (mMap.containsKey(name)) {
                 return false;
             }
-            mBookmark.put(name, root);
-            MyApp.getContext().getSharedPreferences(BOOKMARK_FILE, Context.MODE_PRIVATE).edit()
+            mMap.put(name, root);
+            MyApp.getSharedPreferences(BOOKMARK_FILE).edit()
                     .putString(name, root.pathString)
                     .apply();
             return true;
         }
 
-        private void remove(String name) {
-            mBookmark.remove(name);
-            MyApp.getContext().getSharedPreferences(BOOKMARK_FILE, Context.MODE_PRIVATE).edit()
+        private static void remove(String name) {
+            mMap.remove(name);
+            MyApp.getSharedPreferences(BOOKMARK_FILE).edit()
                     .remove(name)
                     .apply();
         }
 
-        private boolean modify(String oldName, String newName, FilePath newRoot) {
-            if (!newName.equals(oldName) && mBookmark.containsKey(newName)) {
+        private static boolean modify(String oldName, String newName, FilePath newRoot) {
+            if (!newName.equals(oldName) && mMap.containsKey(newName)) {
                 return false;
             } else {
                 remove(oldName);
@@ -920,37 +925,42 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class ClientBookmark {
+    private static class ClientBookmark {
         private final static String BOOKMARK_FILE = "ClientBookmark";
-        private final Map<String, ClientAction.Argument.Connect> mBookmark = new HashMap<>();
+        private static Map<String, ClientAction.Argument.Connect> mMap;
 
-        private ClientBookmark() {
-            Map<String, ?> saved = MyApp.getContext()
-                    .getSharedPreferences(BOOKMARK_FILE, Context.MODE_PRIVATE).getAll();
+        private static void restore(MainActivity activity) {
+            mMap = new HashMap<>();
+
+            Map<String, ?> saved = MyApp.getSharedPreferences(BOOKMARK_FILE).getAll();
             ArrayList<String> names = new ArrayList<>();
             for (String key : saved.keySet()) {
                 if (key.endsWith(".address")) {
                     names.add(key.substring(0, key.length() - ".address".length()));
                 }
             }
+
             for (String name : names) {
                 ClientAction.Argument.Connect connectArg = new ClientAction.Argument.Connect();
-                mBookmark.put(name, connectArg);
+                mMap.put(name, connectArg);
                 connectArg.address = (String) saved.get(name + ".address");
                 connectArg.port = (Integer) saved.get(name + ".port");
                 connectArg.username = (String) saved.get(name + ".username");
                 connectArg.password = (String) saved.get(name + ".password");
                 connectArg.encoding = (String) saved.get(name + ".encoding");
                 connectArg.alias = name;
+
+                activity.addBookmarkMenuItem(R.id.groupClient, name);
             }
         }
 
-        private boolean create(ClientAction.Argument.Connect connectArg) {
-            if (mBookmark.containsKey(connectArg.alias)) {
+
+        private static boolean create(ClientAction.Argument.Connect connectArg) {
+            if (mMap.containsKey(connectArg.alias)) {
                 return false;
             }
-            mBookmark.put(connectArg.alias, connectArg);
-            MyApp.getContext().getSharedPreferences(BOOKMARK_FILE, Context.MODE_PRIVATE).edit()
+            mMap.put(connectArg.alias, connectArg);
+            MyApp.getSharedPreferences(BOOKMARK_FILE).edit()
                     .putString(connectArg.alias + ".address", connectArg.address)
                     .putInt(connectArg.alias + ".port", connectArg.port)
                     .putString(connectArg.alias + ".username", connectArg.username)
@@ -960,9 +970,9 @@ public class MainActivity extends AppCompatActivity
             return true;
         }
 
-        private void remove(String name) {
-            mBookmark.remove(name);
-            MyApp.getContext().getSharedPreferences(BOOKMARK_FILE, Context.MODE_PRIVATE).edit()
+        private static void remove(String name) {
+            mMap.remove(name);
+            MyApp.getSharedPreferences(BOOKMARK_FILE).edit()
                     .remove(name + ".address")
                     .remove(name + ".port")
                     .remove(name + ".username")
@@ -971,9 +981,9 @@ public class MainActivity extends AppCompatActivity
                     .apply();
         }
 
-        private boolean modify(String oldName, ClientAction.Argument.Connect newConnectArg) {
+        private static boolean modify(String oldName, ClientAction.Argument.Connect newConnectArg) {
             if (!newConnectArg.alias.equals(oldName) &&
-                    mBookmark.containsKey(newConnectArg.alias)) {
+                    mMap.containsKey(newConnectArg.alias)) {
                 return false;
             } else {
                 remove(oldName);
@@ -983,36 +993,42 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class ServerBookmark {
-        private final Map<String, ServerWrapper.UserMeta> mBookmark;
+    private static class ServerBookmark {
 
-        private final ServerWrapper mServer;
+        private static Map<String, ServerWrapper.UserMeta> mMap;
 
-        private ServerBookmark() {
+        private static ServerWrapper mServer;
+
+        private static void restore(MainActivity activity) {
             mServer = ServerWrapper.getSingleton();
-            mBookmark = mServer.getAllUsers();
+            mMap = mServer.getAllUsers();
+
+            for (String key : mMap.keySet()) {
+                activity.addBookmarkMenuItem(R.id.groupServer, key);
+            }
         }
 
-        private boolean create(ServerWrapper.UserMeta userMeta) {
+        private static boolean create(ServerWrapper.UserMeta userMeta) {
             return mServer.createUser(userMeta);
         }
 
-        private void remove(String name) {
-            closeCorrespondingSession(name);
+        private static void remove(MainActivity activity, String name) {
+            closeCorrespondingSession(activity, name);
             mServer.removeUser(name);
         }
 
-        private boolean modify(String oldUsername, ServerWrapper.UserMeta newMeta) {
-            closeCorrespondingSession(oldUsername);
+        private static boolean modify(
+                MainActivity activity, String oldUsername, ServerWrapper.UserMeta newMeta) {
+            closeCorrespondingSession(activity, oldUsername);
             return mServer.modifyUser(oldUsername, newMeta);
         }
 
-        private void closeCorrespondingSession(String username) {
-            for (int i = 0; i < mSessionFragments.size(); i++) {
-                ExplorerFragment fragment = mSessionFragments.get(i);
+        private static void closeCorrespondingSession(MainActivity activity, String username) {
+            for (int i = 0; i < activity.mSessionFragments.size(); i++) {
+                ExplorerFragment fragment = activity.mSessionFragments.get(i);
                 if (fragment instanceof ServerExplorerFragment &&
                         (((ServerExplorerFragment) fragment).getUsername().equals(username))) {
-                    closeSession(i--);
+                    activity.closeSession(i--);
                 }
             }
         }
