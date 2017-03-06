@@ -269,8 +269,9 @@ public abstract class ExplorerFragment extends Fragment {
 
     protected abstract void paste();
 
-    protected Drawable getIcon(FileMeta meta) {
-        return ContextCompat.getDrawable(getContext(), FileType.getIcon(meta.type));
+    protected Drawable getIconDrawable(FileMeta meta) {
+//        return ContextCompat.getDrawable(getContext(), FileType.getIconId(meta.type));
+        return FileType.getIcon(getContext(), meta.type);
     }
 
     protected void endUp() {
@@ -655,10 +656,10 @@ public abstract class ExplorerFragment extends Fragment {
 
             FileMeta meta = mMetaList.get(position);
 
-            Bitmap bitmap = ((BitmapDrawable) getIcon(meta)).getBitmap();
-            RoundedBitmapDrawable rid = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
-            rid.setCornerRadius(bitmap.getWidth() * 0.15f);
-            itemView.mTypeView.setImageDrawable(rid);
+//            Bitmap bitmap = ((BitmapDrawable) getIconDrawable(meta)).getBitmap();
+//            RoundedBitmapDrawable rid = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
+//            rid.setCornerRadius(bitmap.getWidth() * 0.15f);
+            itemView.mTypeView.setImageDrawable(getIconDrawable(meta));
 
             itemView.mNameView.setText(meta.name);
             itemView.mSizeView.setText(meta.size);

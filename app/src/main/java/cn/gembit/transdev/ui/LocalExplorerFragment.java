@@ -255,7 +255,7 @@ public class LocalExplorerFragment extends ExplorerFragment {
     }
 
     @Override
-    protected Drawable getIcon(FileMeta meta) {
+    protected Drawable getIconDrawable(FileMeta meta) {
         if (meta.type == FileType.FILE_APK) {
             String apkFilePath = getCurDir().getChild(meta.name).pathString;
             PackageInfo info = mPackageManager.getPackageArchiveInfo(apkFilePath, 0);
@@ -266,6 +266,6 @@ public class LocalExplorerFragment extends ExplorerFragment {
                 return info.applicationInfo.loadIcon(mPackageManager);
             }
         }
-        return super.getIcon(meta);
+        return super.getIconDrawable(meta);
     }
 }

@@ -50,7 +50,7 @@ public class AdditionActivity extends AppCompatActivity {
             Drawable drawable = toolbar.getNavigationIcon();
             if (drawable != null) {
                 drawable.setColorFilter(MyApp.getColor(this, R.attr.titleTextColor),
-                        PorterDuff.Mode.SRC_ATOP);
+                        PorterDuff.Mode.DST_ATOP);
             }
         }
 

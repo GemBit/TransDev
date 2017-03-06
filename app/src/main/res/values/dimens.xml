@@ -22,4 +22,5 @@
     <dimen name="mediumTextSize">17sp</dimen>
     <dimen name="largeTextSize">21sp</dimen>
 
+    <dimen name="fileIconCorner">4dp</dimen>
 </resources>
