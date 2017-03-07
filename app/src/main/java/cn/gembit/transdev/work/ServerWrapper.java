@@ -207,7 +207,7 @@ public class ServerWrapper {
         } catch (SocketException ex) {
             ex.printStackTrace();
         }
-        return "?.?.?.?";
+        return "N/A";
     }
 
     public int getPort() {

@@ -39,13 +39,11 @@ public class BaseActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
 
         sActivities.add(this);
-        System.out.println(sActivities.size());
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
         sActivities.remove(this);
-        System.out.println(sActivities.size());
     }
 }

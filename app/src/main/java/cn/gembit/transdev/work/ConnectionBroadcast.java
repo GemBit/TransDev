@@ -181,7 +181,8 @@ public class ConnectionBroadcast {
                         argument.encoding = dis.readUTF();
                         argument.alias = dis.readUTF();
 
-                        if (received - dis.available() == dis.readInt()) {
+                        if (received - dis.available() == dis.readInt() &&
+                                !argument.address.equals(ServerWrapper.getSingleton().getIP())) {
                             break;
                         }
                         argument.address = null;
