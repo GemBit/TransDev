@@ -27,7 +27,7 @@
 
         <view
             android:id="@+id/pathBar"
-            class="cn.gembit.transdev.ui.ExplorerFragment$PathBar"
+            class="cn.gembit.transdev.activities.ExplorerFragment$PathBar"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
             android:scrollbars="none" />

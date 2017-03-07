@@ -1,4 +1,4 @@
-package cn.gembit.transdev.ui;
+package cn.gembit.transdev.activities;
 
 import android.content.Context;
 import android.content.DialogInterface;
@@ -17,8 +17,8 @@ import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FileOpener;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
-import cn.gembit.transdev.util.GlobalClipboard;
-import cn.gembit.transdev.util.TaskService;
+import cn.gembit.transdev.work.GlobalClipboard;
+import cn.gembit.transdev.work.TaskService;
 import cn.gembit.transdev.widgets.BottomDialogBuilder;
 import cn.gembit.transdev.widgets.InputDialog;
 

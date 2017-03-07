@@ -1,4 +1,4 @@
-package cn.gembit.transdev.ui;
+package cn.gembit.transdev.activities;
 
 import android.app.NotificationManager;
 import android.app.PendingIntent;
@@ -22,7 +22,6 @@ import android.support.v4.view.GravityCompat;
 import android.support.v4.view.ViewPager;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.app.NotificationCompat;
 import android.support.v7.widget.AppCompatSpinner;
 import android.support.v7.widget.SwitchCompat;
@@ -46,16 +45,16 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import cn.gembit.transdev.R;
-import cn.gembit.transdev.addition.MyApp;
+import cn.gembit.transdev.app.MyApp;
 import cn.gembit.transdev.file.FilePath;
-import cn.gembit.transdev.util.AliveKeeper;
-import cn.gembit.transdev.util.ClientAction;
-import cn.gembit.transdev.util.ConnectionBroadcast;
-import cn.gembit.transdev.util.ServerWrapper;
-import cn.gembit.transdev.util.TaskService;
+import cn.gembit.transdev.app.AliveKeeper;
+import cn.gembit.transdev.work.ClientAction;
+import cn.gembit.transdev.work.ConnectionBroadcast;
+import cn.gembit.transdev.work.ServerWrapper;
+import cn.gembit.transdev.work.TaskService;
 import cn.gembit.transdev.widgets.BottomDialogBuilder;
 
-public class MainActivity extends AppCompatActivity
+public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     private final static String[] ENCODINGS;
@@ -63,7 +62,7 @@ public class MainActivity extends AppCompatActivity
     private final static int DEFAULT_ENCODING_INDEX;
 
 
-    private final static int SERVER_ON_NOTIFICATION_ID = View.generateViewId();
+    private final static int SERVER_ON_NOTIFICATION_ID = 1;
     private final static int PERMISSIONS_REQUEST_CODE = 1;
 
     static {
@@ -110,7 +109,7 @@ public class MainActivity extends AppCompatActivity
                     new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss(DialogInterface dialog) {
-                            MainActivity.this.finish();
+                            BaseActivity.exit();
                         }
                     }
             ).show();
@@ -138,7 +137,7 @@ public class MainActivity extends AppCompatActivity
                     .setOnDismissListener(new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss(DialogInterface dialog) {
-                            MainActivity.this.finish();
+                            BaseActivity.exit();
                         }
                     })
                     .show();
@@ -184,14 +183,16 @@ public class MainActivity extends AppCompatActivity
                     new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss(DialogInterface dialog) {
-                            MainActivity.this.finish();
+                            BaseActivity.exit();
                         }
                     }).show();
         } else {
+            Context applicationContext = getApplicationContext();
+            finish();
+
             Intent intent = new Intent(this, MainActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
-            finish();
+            applicationContext.startActivity(intent);
         }
     }
 
@@ -428,11 +429,10 @@ public class MainActivity extends AppCompatActivity
         final TextView tvReceive = (TextView) view.findViewById(R.id.tvReceive);
         final SwitchCompat swtReceive = (SwitchCompat) view.findViewById(R.id.swtReceive);
 
-
         final AlertDialog quickConnectDialog = new AlertDialog.Builder(this)
                 .setCancelable(false)
                 .setView(view)
-                .setNegativeButton("退出", new DialogInterface.OnClickListener() {
+                .setPositiveButton("退出", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         swtSend.setChecked(false);
@@ -520,7 +520,8 @@ public class MainActivity extends AppCompatActivity
                                                         "远程文件：" + argument.alias, argument),
                                                 R.drawable.ic_client,
                                                 argument.alias);
-                                        quickConnectDialog.dismiss();
+                                        quickConnectDialog.getButton(
+                                                DialogInterface.BUTTON_POSITIVE).performClick();
                                     }
                                 })
                                 .show();
@@ -535,7 +536,7 @@ public class MainActivity extends AppCompatActivity
 
         ImageView imageView = new ImageView(this);
         Drawable drawable = ContextCompat.getDrawable(this, R.drawable.ic_close);
-        drawable.setColorFilter(MyApp.getColor(this, android.R.attr.textColor),
+        drawable.setColorFilter(BaseActivity.getColor(this, android.R.attr.textColor),
                 PorterDuff.Mode.SRC_ATOP);
         imageView.setImageDrawable(drawable);
 
@@ -575,7 +576,7 @@ public class MainActivity extends AppCompatActivity
 
         ImageView imageView = new ImageView(this);
         Drawable drawable = ContextCompat.getDrawable(this, R.drawable.ic_config);
-        drawable.setColorFilter(MyApp.getColor(this, android.R.attr.textColor),
+        drawable.setColorFilter(BaseActivity.getColor(this, android.R.attr.textColor),
                 PorterDuff.Mode.SRC_ATOP);
         imageView.setImageDrawable(drawable);
 

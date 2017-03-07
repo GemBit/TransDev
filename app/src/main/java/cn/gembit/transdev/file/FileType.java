@@ -8,7 +8,8 @@ import android.support.v4.content.ContextCompat;
 import android.webkit.MimeTypeMap;
 
 import cn.gembit.transdev.R;
-import cn.gembit.transdev.addition.MyApp;
+import cn.gembit.transdev.activities.BaseActivity;
+import cn.gembit.transdev.app.AppConfig;
 
 public class FileType {
 
@@ -23,7 +24,11 @@ public class FileType {
     public final static int FILE_TEXT = 8;
     public final static int FILE_VIDEO = 9;
     public final static int FILE_WORD = 10;
-    public final static int FILE_UNKNOWN = -1;
+    public final static int FILE_UNKNOWN = 11;
+
+    private final static int TYPE_COUNT = FILE_UNKNOWN + 1;
+
+    private static Drawable[] sIconDrawables = null;
 
     public static String getNameExtension(String name) {
         if (name != null) {
@@ -93,110 +98,50 @@ public class FileType {
         return FILE_UNKNOWN;
     }
 
-    public static int getIconId(int fileType) {
-
-        switch (fileType) {
-            case DIR:
-                return R.drawable.ic_dir;
-
-            case FILE_APK:
-                return R.drawable.ic_file_apk;
-
-            case FILE_ARCHIVE:
-                return R.drawable.ic_file_archive;
-
-            case FILE_AUDIO:
-                return R.drawable.ic_file_audio;
-
-            case FILE_EXCEL:
-                return R.drawable.ic_file_excel;
-
-            case FILE_IMAGE:
-                return R.drawable.ic_file_image;
-
-            case FILE_PDF:
-                return R.drawable.ic_file_pdf;
-
-            case FILE_PPT:
-                return R.drawable.ic_file_ppt;
-
-            case FILE_TEXT:
-                return R.drawable.ic_file_text;
-
-            case FILE_UNKNOWN:
-                return R.drawable.ic_file_unknown;
-
-            case FILE_VIDEO:
-                return R.drawable.ic_file_video;
-
-            case FILE_WORD:
-                return R.drawable.ic_file_word;
-
-            default:
-                return R.drawable.ic_file_unknown;
+    public static Drawable getIcon(Context context, int fileType) {
+        if (sIconDrawables == null) {
+            generateIconDrawables(context);
         }
+        fileType = fileType >= 0 && fileType < TYPE_COUNT ? fileType : FILE_UNKNOWN;
+        return sIconDrawables[fileType];
     }
 
-    public static Drawable getIcon(Context context, int fileType) {
-        int iconId;
-        switch (fileType) {
-            case DIR:
-                iconId = R.drawable.ic_add;
-                break;
-
-            case FILE_APK:
-                iconId = R.drawable.ic_file_apk;
-                break;
-
-            case FILE_ARCHIVE:
-                iconId = R.drawable.ic_file_archive;
-                break;
-
-            case FILE_AUDIO:
-                iconId = R.drawable.ic_file_audio;
-                break;
-
-            case FILE_EXCEL:
-                iconId = R.drawable.ic_file_excel;
-                break;
-
-            case FILE_IMAGE:
-                iconId = R.drawable.ic_file_image;
-                break;
-
-            case FILE_PDF:
-                iconId = R.drawable.ic_file_pdf;
-                break;
-
-            case FILE_PPT:
-                iconId = R.drawable.ic_file_ppt;
-                break;
-
-            case FILE_TEXT:
-                iconId = R.drawable.ic_file_text;
-                break;
-
-            case FILE_UNKNOWN:
-                iconId = R.drawable.ic_file_unknown;
-                break;
-
-            case FILE_VIDEO:
-                iconId = R.drawable.ic_file_video;
-                break;
-
-            case FILE_WORD:
-                iconId = R.drawable.ic_file_word;
-                break;
-
-            default:
-                iconId = R.drawable.ic_file_unknown;
-                break;
+    private static void generateIconDrawables(Context context) {
+        Drawable[][] drawables = new Drawable[TYPE_COUNT][2];
+        for (int i = 0; i < drawables.length; i++) {
+            drawables[i][0] = ContextCompat.getDrawable(context, AppConfig.readFileIconBgId());
         }
 
-        Drawable[] drawables = new Drawable[2];
-        drawables[0] = ContextCompat.getDrawable(context, R.drawable.bg_file_icon);
-        drawables[0].setColorFilter(MyApp.getColor(context, R.attr.colorPrimary), PorterDuff.Mode.SRC_ATOP);
-        drawables[1] = ContextCompat.getDrawable(context, iconId);
-        return new LayerDrawable(drawables);
+        drawables[DIR][0].setColorFilter(BaseActivity.getColor(context, R.attr.colorPrimary),
+                PorterDuff.Mode.SRC_ATOP);
+        drawables[FILE_APK][0].setColorFilter(0xff43a047, PorterDuff.Mode.SRC_ATOP);
+        drawables[FILE_ARCHIVE][0].setColorFilter(0xff795548, PorterDuff.Mode.SRC_ATOP);
+        drawables[FILE_AUDIO][0].setColorFilter(0xffe53935, PorterDuff.Mode.SRC_ATOP);
+        drawables[FILE_EXCEL][0].setColorFilter(0xff1d7044, PorterDuff.Mode.SRC_ATOP);
+        drawables[FILE_IMAGE][0].setColorFilter(0xff7cb342, PorterDuff.Mode.SRC_ATOP);
+        drawables[FILE_PDF][0].setColorFilter(0xffe93e30, PorterDuff.Mode.SRC_ATOP);
+        drawables[FILE_PPT][0].setColorFilter(0xffd04424, PorterDuff.Mode.SRC_ATOP);
+        drawables[FILE_TEXT][0].setColorFilter(0xff076fc1, PorterDuff.Mode.SRC_ATOP);
+        drawables[FILE_VIDEO][0].setColorFilter(0xff673ab7, PorterDuff.Mode.SRC_ATOP);
+        drawables[FILE_WORD][0].setColorFilter(0xff2a5696, PorterDuff.Mode.SRC_ATOP);
+        drawables[FILE_UNKNOWN][0].setColorFilter(0xff607d8b, PorterDuff.Mode.SRC_ATOP);
+
+        drawables[DIR][1] = ContextCompat.getDrawable(context, R.drawable.ic_dir);
+        drawables[FILE_APK][1] = ContextCompat.getDrawable(context, R.drawable.ic_file_apk);
+        drawables[FILE_ARCHIVE][1] = ContextCompat.getDrawable(context, R.drawable.ic_file_archive);
+        drawables[FILE_AUDIO][1] = ContextCompat.getDrawable(context, R.drawable.ic_file_audio);
+        drawables[FILE_EXCEL][1] = ContextCompat.getDrawable(context, R.drawable.ic_file_excel);
+        drawables[FILE_IMAGE][1] = ContextCompat.getDrawable(context, R.drawable.ic_file_image);
+        drawables[FILE_PDF][1] = ContextCompat.getDrawable(context, R.drawable.ic_file_pdf);
+        drawables[FILE_PPT][1] = ContextCompat.getDrawable(context, R.drawable.ic_file_ppt);
+        drawables[FILE_TEXT][1] = ContextCompat.getDrawable(context, R.drawable.ic_file_text);
+        drawables[FILE_VIDEO][1] = ContextCompat.getDrawable(context, R.drawable.ic_file_video);
+        drawables[FILE_WORD][1] = ContextCompat.getDrawable(context, R.drawable.ic_file_word);
+        drawables[FILE_UNKNOWN][1] = ContextCompat.getDrawable(context, R.drawable.ic_file_unknown);
+
+        sIconDrawables = new LayerDrawable[TYPE_COUNT];
+        for (int i = 0; i < drawables.length; i++) {
+            sIconDrawables[i] = new LayerDrawable(drawables[i]);
+        }
     }
 }

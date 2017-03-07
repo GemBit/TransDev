@@ -8,14 +8,15 @@
     <uses-permission android:name="android.permission.WAKE_LOCK" />
 
     <application
-        android:name=".addition.MyApp"
+        android:name=".app.MyApp"
         android:allowBackup="false"
         android:icon="@drawable/ic_launcher"
         android:label="捷传"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme.Light">
+        android:theme="@style/AppTheme.Dark">
+
         <activity
-            android:name=".ui.MainActivity"
+            android:name=".activities.MainActivity"
             android:configChanges="orientation|screenSize"
             android:launchMode="singleTask">
             <intent-filter>
@@ -26,25 +27,25 @@
         </activity>
 
         <service
-            android:name=".util.TaskService"
+            android:name=".work.TaskService"
             android:exported="false" />
 
         <activity
-            android:name=".ui.TaskActivity"
+            android:name=".activities.TaskActivity"
             android:launchMode="singleTop"
-            android:parentActivityName=".ui.MainActivity">
+            android:parentActivityName=".activities.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.MainActivity" />
+                android:value=".activities.MainActivity" />
         </activity>
 
         <activity
-            android:name=".ui.AdditionActivity"
+            android:name=".activities.AdditionActivity"
             android:launchMode="singleTop"
-            android:parentActivityName=".ui.MainActivity">
+            android:parentActivityName=".activities.MainActivity">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.MainActivity" />
+                android:value=".activities.MainActivity" />
         </activity>
 
     </application>

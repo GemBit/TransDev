@@ -1,4 +1,4 @@
-package cn.gembit.transdev.ui;
+package cn.gembit.transdev.activities;
 
 import android.content.DialogInterface;
 import android.content.res.ColorStateList;
@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.AppCompatButton;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,13 +22,12 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import cn.gembit.transdev.R;
-import cn.gembit.transdev.addition.MyApp;
 import cn.gembit.transdev.file.FileMeta;
-import cn.gembit.transdev.util.GlobalClipboard;
-import cn.gembit.transdev.util.TaskService;
+import cn.gembit.transdev.work.GlobalClipboard;
+import cn.gembit.transdev.work.TaskService;
 import cn.gembit.transdev.widgets.AutoFitRecyclerView;
 
-public class TaskActivity extends AppCompatActivity {
+public class TaskActivity extends BaseActivity {
 
     private GridLayoutManager mManager;
     private TaskListAdapter mAdapter;
@@ -47,7 +45,7 @@ public class TaskActivity extends AppCompatActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             Drawable drawable = toolbar.getNavigationIcon();
             if (drawable != null) {
-                drawable.setColorFilter(MyApp.getColor(this, R.attr.titleTextColor),
+                drawable.setColorFilter(BaseActivity.getColor(this, R.attr.titleTextColor),
                         PorterDuff.Mode.SRC_ATOP);
             }
         }
@@ -227,8 +225,8 @@ public class TaskActivity extends AppCompatActivity {
                 }
 
                 ViewCompat.setBackgroundTintList(holder.mBtnKillTask, ColorStateList.valueOf(
-                        MyApp.getColor(TaskActivity.this, android.R.attr.colorBackground)));
-                holder.mBtnKillTask.setTextColor(MyApp.getColor(TaskActivity.this,
+                        BaseActivity.getColor(TaskActivity.this, android.R.attr.colorBackground)));
+                holder.mBtnKillTask.setTextColor(BaseActivity.getColor(TaskActivity.this,
                         android.R.attr.textColor));
                 holder.mBtnKillTask.setEnabled(false);
             }

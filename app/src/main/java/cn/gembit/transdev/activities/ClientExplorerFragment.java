@@ -1,4 +1,4 @@
-package cn.gembit.transdev.ui;
+package cn.gembit.transdev.activities;
 
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
@@ -6,15 +6,14 @@ import android.widget.Toast;
 
 import org.apache.commons.net.ftp.FTPClient;
 
-import java.io.IOException;
 import java.util.Collection;
 
 import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
-import cn.gembit.transdev.util.ClientAction;
-import cn.gembit.transdev.util.GlobalClipboard;
-import cn.gembit.transdev.util.TaskService;
+import cn.gembit.transdev.work.ClientAction;
+import cn.gembit.transdev.work.GlobalClipboard;
+import cn.gembit.transdev.work.TaskService;
 import cn.gembit.transdev.widgets.BottomDialogBuilder;
 import cn.gembit.transdev.widgets.InputDialog;
 

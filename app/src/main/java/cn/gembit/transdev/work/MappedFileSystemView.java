@@ -1,4 +1,4 @@
-package cn.gembit.transdev.util;
+package cn.gembit.transdev.work;
 
 import org.apache.ftpserver.ftplet.FileSystemView;
 import org.apache.ftpserver.ftplet.FtpException;

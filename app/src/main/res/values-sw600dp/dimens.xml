@@ -21,5 +21,6 @@
     <dimen name="mediumTextSize">20sp</dimen>
     <dimen name="largeTextSize">24sp</dimen>
 
-    <dimen name="fileIconCorner">5dp</dimen>
+    <dimen name="fileIconCorner">10dp</dimen>
+
 </resources>

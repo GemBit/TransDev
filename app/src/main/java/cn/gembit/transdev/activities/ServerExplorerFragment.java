@@ -1,4 +1,4 @@
-package cn.gembit.transdev.ui;
+package cn.gembit.transdev.activities;
 
 import android.content.DialogInterface;
 import android.support.v7.app.AlertDialog;
@@ -13,8 +13,8 @@ import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FileOpener;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
-import cn.gembit.transdev.util.GlobalClipboard;
-import cn.gembit.transdev.util.ServerWrapper;
+import cn.gembit.transdev.work.GlobalClipboard;
+import cn.gembit.transdev.work.ServerWrapper;
 import cn.gembit.transdev.widgets.BottomDialogBuilder;
 import cn.gembit.transdev.widgets.InputDialog;
 

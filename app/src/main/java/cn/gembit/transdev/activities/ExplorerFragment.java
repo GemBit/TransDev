@@ -1,20 +1,15 @@
-package cn.gembit.transdev.ui;
+package cn.gembit.transdev.activities;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.SharedPreferences;
-import android.graphics.Bitmap;
 import android.graphics.Rect;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.design.widget.AppBarLayout;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.ContextCompat;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.widget.RecyclerView;
 import android.util.AttributeSet;
@@ -44,12 +39,11 @@ import java.util.List;
 import java.util.Map;
 
 import cn.gembit.transdev.R;
-import cn.gembit.transdev.addition.Config;
-import cn.gembit.transdev.addition.MyApp;
+import cn.gembit.transdev.app.AppConfig;
 import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
-import cn.gembit.transdev.util.GlobalClipboard;
+import cn.gembit.transdev.work.GlobalClipboard;
 import cn.gembit.transdev.widgets.AutoFitRecyclerView;
 import cn.gembit.transdev.widgets.FloatingActionButtonMenu;
 import cn.gembit.transdev.widgets.WaitView;
@@ -134,12 +128,13 @@ public abstract class ExplorerFragment extends Fragment {
         if (sIsFirstAttach) {
             sIsFirstAttach = false;
 
-            SharedPreferences sp = Config.UIConfig.getSharedPreferences();
-            sPictureSize = sp.getInt(Config.UIConfig.FILE_LIST_PIC_SIZE,
+            sPictureSize = AppConfig.readFileListPicSize(
                     context.getResources().getDimensionPixelSize(R.dimen.fileListPictureSize));
 
-            sItemNormalBackground = MyApp.getColor(getContext(), android.R.attr.colorBackground);
-            sItemSelectedBackground = MyApp.getColor(getContext(), R.attr.colorPrimary);
+            sItemNormalBackground =
+                    BaseActivity.getColor(getContext(), android.R.attr.colorBackground);
+            sItemSelectedBackground =
+                    BaseActivity.getColor(getContext(), R.attr.colorPrimary);
             sItemSelectedBackground = (sItemSelectedBackground & 0x00FFFFFF) | 0x55000000;
         }
     }
@@ -270,7 +265,6 @@ public abstract class ExplorerFragment extends Fragment {
     protected abstract void paste();
 
     protected Drawable getIconDrawable(FileMeta meta) {
-//        return ContextCompat.getDrawable(getContext(), FileType.getIconId(meta.type));
         return FileType.getIcon(getContext(), meta.type);
     }
 
@@ -524,7 +518,7 @@ public abstract class ExplorerFragment extends Fragment {
                 directory.setText(names.get(i));
                 directory.setAlpha(NORMAL_ALPHA);
                 directory.setTextSize(TypedValue.COMPLEX_UNIT_PX, mMediumTextSize);
-                directory.setTextColor(MyApp.getColor(getContext(), R.attr.titleTextColor));
+                directory.setTextColor(BaseActivity.getColor(getContext(), R.attr.titleTextColor));
                 directory.setBackgroundResource(mTypedValue.resourceId);
                 directory.setPadding(mGap, 0, mGap, 0);
                 directory.setOnClickListener(this);
@@ -581,10 +575,10 @@ public abstract class ExplorerFragment extends Fragment {
             setOnClickListener(this);
             setOnLongClickListener(this);
 
-            resize(true);
+            checkResize(true);
         }
 
-        private void resize(boolean forced) {
+        private void checkResize(boolean forced) {
             ViewGroup.LayoutParams params = mTypeView.getLayoutParams();
             if (forced || sPictureSize != params.width) {
                 params.width = params.height = sPictureSize;
@@ -598,13 +592,13 @@ public abstract class ExplorerFragment extends Fragment {
         @Override
         protected void onLayout(boolean changed, int l, int t, int r, int b) {
             super.onLayout(changed, l, t, r, b);
-            resize(false);
+            checkResize(false);
         }
 
         @Override
         public void onClick(View v) {
             if (!mLocked) {
-                if(v == mTypeView) {
+                if (v == mTypeView) {
                     onLongClick(this);
                     return;
                 }
@@ -656,11 +650,7 @@ public abstract class ExplorerFragment extends Fragment {
 
             FileMeta meta = mMetaList.get(position);
 
-//            Bitmap bitmap = ((BitmapDrawable) getIconDrawable(meta)).getBitmap();
-//            RoundedBitmapDrawable rid = RoundedBitmapDrawableFactory.create(getResources(), bitmap);
-//            rid.setCornerRadius(bitmap.getWidth() * 0.15f);
             itemView.mTypeView.setImageDrawable(getIconDrawable(meta));
-
             itemView.mNameView.setText(meta.name);
             itemView.mSizeView.setText(meta.size);
             itemView.mTimeView.setText(meta.time);

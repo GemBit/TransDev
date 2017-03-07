@@ -1,6 +1,5 @@
-package cn.gembit.transdev.util;
+package cn.gembit.transdev.work;
 
-import android.content.Context;
 import android.content.SharedPreferences;
 import android.os.Environment;
 
@@ -33,7 +32,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import cn.gembit.transdev.addition.MyApp;
+import cn.gembit.transdev.app.MyApp;
 import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 
@@ -208,7 +207,7 @@ public class ServerWrapper {
         } catch (SocketException ex) {
             ex.printStackTrace();
         }
-        return "";
+        return "?.?.?.?";
     }
 
     public int getPort() {

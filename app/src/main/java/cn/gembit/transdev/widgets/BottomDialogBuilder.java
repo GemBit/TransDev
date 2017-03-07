@@ -8,14 +8,13 @@ import android.view.View;
 import android.widget.TextView;
 
 import cn.gembit.transdev.R;
-import cn.gembit.transdev.addition.MyApp;
+import cn.gembit.transdev.activities.BaseActivity;
 
 public class BottomDialogBuilder {
 
     private BottomSheetDialog mDialog;
 
-
-    public static BottomDialogBuilder make(Context context, String message, String buttonText) {
+    public static BottomDialogBuilder make(Context context, String message) {
         final BottomDialogBuilder builder = new BottomDialogBuilder();
         builder.mDialog = new BottomSheetDialog(context);
         builder.mDialog.setCancelable(false);
@@ -25,8 +24,8 @@ public class BottomDialogBuilder {
 
         ((TextView) rootView.findViewById(R.id.message)).setText(message);
         AppCompatButton btnOK = (AppCompatButton) rootView.findViewById(R.id.btnOK);
-        btnOK.setText(buttonText);
-        btnOK.setTextColor(MyApp.getColor(context, R.attr.titleTextColor));
+        btnOK.setText("确认");
+        btnOK.setTextColor(BaseActivity.getColor(context, R.attr.titleTextColor));
         btnOK.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -34,10 +33,6 @@ public class BottomDialogBuilder {
             }
         });
         return builder;
-    }
-
-    public static BottomDialogBuilder make(Context context, String message) {
-        return make(context, message, "确认");
     }
 
     public BottomDialogBuilder setOnDismissListener(DialogInterface.OnDismissListener listener) {

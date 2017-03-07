@@ -20,7 +20,7 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import cn.gembit.transdev.R;
-import cn.gembit.transdev.addition.MyApp;
+import cn.gembit.transdev.activities.BaseActivity;
 
 import static android.content.Context.WINDOW_SERVICE;
 
@@ -84,7 +84,7 @@ public class FloatingActionButtonMenu extends CardView {
         addView(mRelativeLayout, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
         mTransparentBackground = ContextCompat.getColor(getContext(), android.R.color.transparent);
-        mDarkBackground = MyApp.getColor(getContext(), android.R.attr.colorBackground);
+        mDarkBackground = BaseActivity.getColor(getContext(), android.R.attr.colorBackground);
         mDarkBackground = mDarkBackground & 0xffffff | 0x99000000;
     }
 
@@ -253,14 +253,15 @@ public class FloatingActionButtonMenu extends CardView {
 
             mButton = new ImageButton(context);
             mButton.setImageDrawable(ContextCompat.getDrawable(getContext(), drawableId));
-            mButton.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bg_floating_action_button));
+            mButton.setBackground(ContextCompat.getDrawable(
+                    getContext(), R.drawable.bg_floating_action_button));
             mButton.setId(View.generateViewId());
             mButton.setOnClickListener(listener);
             mButton.setVisibility(INVISIBLE);
 
             mTitle = new TextView(context);
-            mTitle.setTextColor(MyApp.getColor(getContext(), R.attr.titleTextColor));
-            mTitle.setBackgroundColor(MyApp.getColor(getContext(), R.attr.colorAccent));
+            mTitle.setTextColor(BaseActivity.getColor(getContext(), R.attr.titleTextColor));
+            mTitle.setBackgroundColor(BaseActivity.getColor(getContext(), R.attr.colorAccent));
             mTitle.setText(text);
             mTitle.setPadding(hPadding, vPadding, hPadding, vPadding);
             mTitle.setId(View.generateViewId());

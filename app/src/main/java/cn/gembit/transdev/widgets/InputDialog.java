@@ -2,7 +2,6 @@ package cn.gembit.transdev.widgets;
 
 import android.content.Context;
 import android.content.res.Resources;
-import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AlertDialog;
 import android.util.TypedValue;
 import android.view.View;
@@ -11,7 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import cn.gembit.transdev.R;
-import cn.gembit.transdev.addition.MyApp;
+import cn.gembit.transdev.activities.BaseActivity;
 
 public abstract class InputDialog {
 
@@ -37,7 +36,7 @@ public abstract class InputDialog {
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 
         mErrorView = new TextView(context);
-        mErrorView.setTextColor(MyApp.getColor(context, R.attr.textColorError));
+        mErrorView.setTextColor(BaseActivity.getColor(context, R.attr.textColorError));
         mErrorView.setTextSize(TypedValue.COMPLEX_UNIT_PX, mediumTextSize);
         container.addView(mErrorView,
                 LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT);

@@ -1,4 +1,4 @@
-package cn.gembit.transdev.util;
+package cn.gembit.transdev.work;
 
 import android.app.Notification;
 import android.app.NotificationManager;
@@ -9,7 +9,6 @@ import android.content.Intent;
 import android.os.IBinder;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
-import android.view.View;
 import android.widget.Toast;
 
 import org.apache.commons.net.ftp.FTPClient;
@@ -22,7 +21,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -31,14 +29,15 @@ import java.util.LinkedList;
 import java.util.List;
 
 import cn.gembit.transdev.R;
+import cn.gembit.transdev.app.AliveKeeper;
 import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
-import cn.gembit.transdev.ui.TaskActivity;
+import cn.gembit.transdev.activities.TaskActivity;
 
 public class TaskService extends Service {
 
-    private final static int TASK_NOTIFICATION_ID = View.generateViewId();
+    private final static int TASK_NOTIFICATION_ID = 2;
 
     private final static List<Task> TASKS = new LinkedList<>();
     private static int sUnfinishedTaskCount = 0;

@@ -1,4 +1,4 @@
-package cn.gembit.transdev.util;
+package cn.gembit.transdev.app;
 
 import android.content.Context;
 import android.os.PowerManager;
