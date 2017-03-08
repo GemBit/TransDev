@@ -1,11 +1,15 @@
 package cn.gembit.transdev.widgets;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
+import android.support.annotation.Px;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.widget.CardView;
 import android.util.AttributeSet;
+import android.view.Gravity;
 import android.view.View;
 import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
@@ -15,8 +19,8 @@ import android.view.animation.Interpolator;
 import android.view.animation.OvershootInterpolator;
 import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
+import android.widget.GridLayout;
 import android.widget.ImageButton;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import cn.gembit.transdev.R;
@@ -51,7 +55,7 @@ public class FloatingActionButtonMenu extends CardView {
         DISAPPEAR_ALPHA_ANIMATION = new AlphaAnimation(1f, 0f);
     }
 
-    private RelativeLayout mRelativeLayout;
+    private GridLayout mGridLayout;
     private ImageButton mBaseButton;
     private SubItem[] mSubItems;
 
@@ -80,48 +84,70 @@ public class FloatingActionButtonMenu extends CardView {
     }
 
     private void init() {
-        mRelativeLayout = new RelativeLayout(getContext());
-        addView(mRelativeLayout, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        mGridLayout = new GridLayout(getContext());
+        LayoutParams params =
+                new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+        params.gravity = Gravity.BOTTOM | Gravity.END;
+        int fabGap = getContext().getResources().getDimensionPixelSize(R.dimen.fabGap);
+        mGridLayout.setPadding(fabGap, 0, fabGap, fabGap);
+        addView(mGridLayout, params);
+
+        mGridLayout.setClipChildren(false);
+        mGridLayout.setClipToPadding(false);
+        setClipChildren(false);
+        setClipToPadding(false);
 
         mTransparentBackground = ContextCompat.getColor(getContext(), android.R.color.transparent);
         mDarkBackground = BaseActivity.getAttrColor(getContext(), android.R.attr.colorBackground);
         mDarkBackground = mDarkBackground & 0xffffff | 0x99000000;
     }
 
-    public void setContent(int drawerModeIconId, int buttonModeIconId,
-                           final OnClickListener clickListener,
-                           final OnLongClickListener longClickListener,
-                           SubItem... subItems) {
+    public void setContents(int drawerModeIconId, int buttonModeIconId,
+                            final OnClickListener clickListener,
+                            final OnLongClickListener longClickListener,
+                            SubItem... subItems) {
         mSubItems = subItems == null ? new SubItem[0] : subItems;
         mExpanded = false;
         mAtDrawerMode = true;
         mDrawerModeIcon = ContextCompat.getDrawable(getContext(), drawerModeIconId);
         mButtonModeIcon = ContextCompat.getDrawable(getContext(), buttonModeIconId);
 
-        mBaseButton = new ImageButton(getContext());
-        mBaseButton.setImageDrawable(mAtDrawerMode ? mDrawerModeIcon : mButtonModeIcon);
-        mBaseButton.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bg_floating_action_button));
-        mBaseButton.setId(View.generateViewId());
+        mGridLayout.setRowCount(mSubItems.length + 1);
+        mGridLayout.setColumnCount(2);
 
         int fabGap = getContext().getResources().getDimensionPixelSize(R.dimen.fabGap);
         int fabNormal = getContext().getResources().getDimensionPixelSize(R.dimen.fabNormal);
         int fabMini = getContext().getResources().getDimensionPixelSize(R.dimen.fabMini);
 
-        RelativeLayout.LayoutParams baseButtonParams
-                = new RelativeLayout.LayoutParams(fabNormal, fabNormal);
-        baseButtonParams.setMargins(0, 0, 0, fabGap);
-        baseButtonParams.setMarginEnd(fabGap);
-        baseButtonParams.addRule(RelativeLayout.ALIGN_PARENT_END);
-        baseButtonParams.addRule(RelativeLayout.ALIGN_PARENT_BOTTOM);
-        mRelativeLayout.addView(mBaseButton, baseButtonParams);
+        mBaseButton = new ImageButton(getContext());
+        mBaseButton.setImageDrawable(mAtDrawerMode ? mDrawerModeIcon : mButtonModeIcon);
+        mBaseButton.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bg_floating_action_button));
+        mBaseButton.setId(View.generateViewId());
 
-        ImageButton lowerOne = mBaseButton;
-        for (SubItem item : mSubItems) {
-            item.mButtonParas.addRule(RelativeLayout.ABOVE, lowerOne.getId());
-            item.mButtonParas.width = item.mButtonParas.height = fabMini;
-            mRelativeLayout.addView(item.mButton, item.mButtonParas);
-            mRelativeLayout.addView(item.mTitle, item.mTitleParas);
-            lowerOne = item.mButton;
+        GridLayout.LayoutParams params = new GridLayout.LayoutParams(
+                GridLayout.spec(mSubItems.length), GridLayout.spec(1));
+        params.width = params.height = fabNormal;
+        params.setGravity(Gravity.CENTER);
+        params.setMargins(fabGap, fabGap, fabGap, fabGap);
+        mGridLayout.addView(mBaseButton, params);
+
+        mGridLayout.setLayoutDirection(View.LAYOUT_DIRECTION_INHERIT);
+
+        boolean ltr = getResources().getConfiguration().getLayoutDirection()
+                == View.LAYOUT_DIRECTION_LTR;
+        int gravity = (ltr ? Gravity.END : Gravity.START) | Gravity.CENTER_VERTICAL;
+
+        for (int i = 0; i < mSubItems.length; i++) {
+            params = new GridLayout.LayoutParams(GridLayout.spec(i), GridLayout.spec(0));
+            params.width = params.height = GridLayout.LayoutParams.WRAP_CONTENT;
+            params.setGravity(gravity);
+            mGridLayout.addView(mSubItems[i].mTitle, params);
+
+            params = new GridLayout.LayoutParams(GridLayout.spec(i), GridLayout.spec(1));
+            params.width = params.height = fabMini;
+            params.setMargins(fabGap, fabGap, fabGap, fabGap);
+            params.setGravity(Gravity.CENTER);
+            mGridLayout.addView(mSubItems[i].mButton, params);
         }
 
         setOnClickListener(new OnClickListener() {
@@ -203,11 +229,33 @@ public class FloatingActionButtonMenu extends CardView {
 
     public int heightFromScreenBottom() {
         Point size = new Point();
-        int[] location = new int[2];
         ((WindowManager) getContext().getSystemService(WINDOW_SERVICE))
                 .getDefaultDisplay().getSize(size);
+
+        int[] location = new int[2];
         mBaseButton.getLocationOnScreen(location);
         return size.y - location[1];
+    }
+
+
+    @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        boolean ltr = newConfig.getLayoutDirection() == View.LAYOUT_DIRECTION_LTR;
+        int gravity = (ltr ? Gravity.END : Gravity.START) | Gravity.CENTER_VERTICAL;
+
+        for (SubItem item : mSubItems) {
+            GridLayout.LayoutParams params =
+                    (GridLayout.LayoutParams) item.mTitle.getLayoutParams();
+            params.setGravity(gravity);
+        }
+    }
+
+
+    @Override
+    public void offsetTopAndBottom(@Px int offset) {
+        mGridLayout.offsetTopAndBottom(offset);
     }
 
     @Override
@@ -219,19 +267,6 @@ public class FloatingActionButtonMenu extends CardView {
         mBaseButton.setEnabled(enabled);
     }
 
-    @Override
-    protected void onLayout(boolean changed, int l, int t, int r, int b) {
-        super.onLayout(changed, l, t, r, b);
-        for (SubItem item : mSubItems) {
-            int deltaX = (int) ((mBaseButton.getX() + mBaseButton.getWidth() / 2) -
-                    (item.mButton.getX() + item.mButton.getWidth() / 2));
-            item.mButton.offsetLeftAndRight(deltaX);
-            item.mTitle.offsetLeftAndRight(deltaX);
-            int deltaY = (item.mTitle.getHeight() - item.mButton.getHeight()) / 2;
-            item.mTitle.offsetTopAndBottom(deltaY);
-        }
-    }
-
     public class SubItem {
 
         private boolean mValid;
@@ -239,13 +274,9 @@ public class FloatingActionButtonMenu extends CardView {
         private ImageButton mButton;
         private TextView mTitle;
 
-        private RelativeLayout.LayoutParams mButtonParas;
-        private RelativeLayout.LayoutParams mTitleParas;
-
         public SubItem(Context context, String text, int drawableId, OnClickListener listener) {
             mValid = true;
 
-            int fabGap = context.getResources().getDimensionPixelOffset(R.dimen.fabGap);
             int hPadding = context.getResources()
                     .getDimensionPixelSize(R.dimen.fabTitleHorizontalPadding);
             int vPadding = context.getResources()
@@ -266,17 +297,6 @@ public class FloatingActionButtonMenu extends CardView {
             mTitle.setPadding(hPadding, vPadding, hPadding, vPadding);
             mTitle.setId(View.generateViewId());
             mTitle.setVisibility(INVISIBLE);
-
-            mButtonParas = new RelativeLayout.LayoutParams(
-                    LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            mButtonParas.addRule(RelativeLayout.ALIGN_PARENT_END);
-            mButtonParas.setMargins(0, 0, 0, fabGap);
-
-            mTitleParas = new RelativeLayout.LayoutParams(
-                    LayoutParams.WRAP_CONTENT, RelativeLayout.LayoutParams.WRAP_CONTENT);
-            mTitleParas.addRule(RelativeLayout.START_OF, mButton.getId());
-            mTitleParas.addRule(RelativeLayout.ALIGN_BOTTOM, mButton.getId());
-            mTitleParas.setMargins(fabGap, 0, fabGap, 0);
         }
 
         public void setValidity(boolean valid) {

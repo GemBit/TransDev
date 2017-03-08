@@ -46,7 +46,7 @@ public class WaitView extends FrameLayout {
     }
 
     private void init() {
-        super.setVisibility(INVISIBLE);
+        super.setVisibility(GONE);
 
         ImageView background = new ImageView(getContext());
         background.setImageDrawable(

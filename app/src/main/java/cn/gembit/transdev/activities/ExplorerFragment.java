@@ -158,7 +158,7 @@ public abstract class ExplorerFragment extends Fragment {
         mFabMenu = (FloatingActionButtonMenu) rootView.findViewById(R.id.fabMenu);
         mWaitView = (WaitView) rootView.findViewById(R.id.waitView);
 
-        mFabMenu.setContent(
+        mFabMenu.setContents(
                 R.drawable.ic_add, R.drawable.ic_paste,
                 new View.OnClickListener() {
                     @Override
@@ -172,20 +172,20 @@ public abstract class ExplorerFragment extends Fragment {
                         return GlobalClipboard.getOut() != null;
                     }
                 },
-                mSelectInverseFAB = mFabMenu.new SubItem(
-                        getContext(), "反选", R.drawable.ic_select_inverse, mListener),
-                mNewFileFAB = mFabMenu.new SubItem(
-                        getContext(), "新建文件", R.drawable.ic_new_file, mListener),
-                mNewDirFAB = mFabMenu.new SubItem(
-                        getContext(), "新建文件夹", R.drawable.ic_new_dir, mListener),
-                mDeleteFAB = mFabMenu.new SubItem(
-                        getContext(), "删除", R.drawable.ic_delete, mListener),
-                mCopyFAB = mFabMenu.new SubItem(
-                        getContext(), "复制", R.drawable.ic_copy, mListener),
+                mRenameFAB = mFabMenu.new SubItem(
+                        getContext(), "重命名", R.drawable.ic_rename, mListener),
                 mCutFAB = mFabMenu.new SubItem(
                         getContext(), "剪切", R.drawable.ic_cut, mListener),
-                mRenameFAB = mFabMenu.new SubItem(
-                        getContext(), "重命名", R.drawable.ic_rename, mListener));
+                mCopyFAB = mFabMenu.new SubItem(
+                        getContext(), "复制", R.drawable.ic_copy, mListener),
+                mDeleteFAB = mFabMenu.new SubItem(
+                        getContext(), "删除", R.drawable.ic_delete, mListener),
+                mNewDirFAB = mFabMenu.new SubItem(
+                        getContext(), "新建文件夹", R.drawable.ic_new_dir, mListener),
+                mNewFileFAB = mFabMenu.new SubItem(
+                        getContext(), "新建文件", R.drawable.ic_new_file, mListener),
+                mSelectInverseFAB = mFabMenu.new SubItem(
+                        getContext(), "反选", R.drawable.ic_select_inverse, mListener));
 
         mRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
             @Override
@@ -295,7 +295,7 @@ public abstract class ExplorerFragment extends Fragment {
 
     protected void lockFragment(boolean toLock) {
         mLocked = toLock;
-        mWaitView.setVisibility(mLocked ? View.VISIBLE : View.INVISIBLE);
+        mWaitView.setVisibility(mLocked ? View.VISIBLE : View.GONE);
         mRefreshLayout.setEnabled(!mLocked);
         mFabMenu.setEnabled(!mLocked);
         mPathBar.setEnabled(!mLocked);
