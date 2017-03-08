@@ -31,5 +31,5 @@
 -keep class org.slf4j.** { *;}
 -keep interface org.slf4j.** { *;}
 
--keepclassmembers class cn.gembit.transdev.R$* {public static <fields>;}
--keep class cn.gembit.transdev.R$*
+-keep class cn.gembit.transdev.R$raw
+-keepclassmembers class cn.gembit.transdev.R$raw {public static <fields>;}

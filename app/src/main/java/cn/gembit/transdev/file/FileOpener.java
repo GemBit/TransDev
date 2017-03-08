@@ -41,6 +41,7 @@ public class FileOpener {
         final String[] types = new String[count + 1];
         System.arraycopy(GENERIC_TYPES, 0, types, 0, count);
         types[count] = "分享";
+
         new AlertDialog.Builder(context)
                 .setTitle("打开为")
                 .setCancelable(true)

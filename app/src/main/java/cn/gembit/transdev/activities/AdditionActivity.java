@@ -24,6 +24,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -51,6 +52,7 @@ public class AdditionActivity extends BaseActivity
 
         OPTIONS[2] = new OptionGroup("应用",
                 new OptionItem("使用说明", "基本使用概述和若干操作细节"),
+                new OptionItem("分享应用", "分享发送本软件的安装包"),
                 new OptionItem("检查更新", null),
                 new OptionItem("退出应用", "结束全部后台并退出应用"));
     }
@@ -86,10 +88,10 @@ public class AdditionActivity extends BaseActivity
             curVersionName = "N/A";
         }
 
-        OPTIONS[2].mItems[1].mSubtitle = "当前版本：" + curVersionName;
-
         OPTIONS[1].mItems[0].mSubtitle = ThemeOption.getNameById(AppConfig.readThemeID());
         OPTIONS[1].mItems[1].mSubtitle = FileIconOption.getNameById(AppConfig.readFileIconBgId());
+
+        OPTIONS[2].mItems[2].mSubtitle = "当前版本：" + curVersionName;
 
         ExpandableListView listView = (ExpandableListView) findViewById(R.id.additionList);
         listView.setAdapter(mAdapter = new AdditionOptionAdapter());
@@ -136,9 +138,12 @@ public class AdditionActivity extends BaseActivity
                 dialogForTips(item);
 
             } else if (childPosition == 1) {
-                new OptionCheckUpdate().dialogForUpdate(item);
+                shareAPK(item);
 
             } else if (childPosition == 2) {
+                new OptionCheckUpdate().dialogForUpdate(item);
+
+            } else if (childPosition == 3) {
                 dialogForExit(item);
             }
         }
@@ -197,6 +202,14 @@ public class AdditionActivity extends BaseActivity
                         "在路径栏长按可以复制对应路径到剪切板\n\n" +
                         "已复制文件，长按粘贴按钮，可以取消之")
                 .show();
+    }
+
+    private void shareAPK(OptionItem item) {
+        String filePath = getApplicationContext().getApplicationInfo().publicSourceDir;
+        Intent intent = new Intent(Intent.ACTION_SEND)
+                .setType("*/*")
+                .putExtra(Intent.EXTRA_STREAM, Uri.fromFile(new File(filePath)));
+        startActivity(Intent.createChooser(intent, item.mTitle));
     }
 
     private void dialogForExit(OptionItem item) {
@@ -400,7 +413,9 @@ public class AdditionActivity extends BaseActivity
             } else {
                 builder.setTitle("检查更新成功");
                 if (mVersionLag > 0) {
-                    builder.setMessage(mDescription)
+                    String msg = "你落后了最新版" + mVersionLag + "个版本。\n\n";
+                    msg += "更新记录：\n\n" + mDescription;
+                    builder.setMessage(msg)
                             .setPositiveButton("下载", new DialogInterface.OnClickListener() {
                                 @Override
                                 public void onClick(DialogInterface dialog, int which) {

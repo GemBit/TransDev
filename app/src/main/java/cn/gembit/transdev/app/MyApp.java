@@ -89,12 +89,11 @@ public class MyApp extends Application implements Thread.UncaughtExceptionHandle
                 cause.printStackTrace();
                 StringBuilder msg = new StringBuilder();
 
-                msg.append("Device=").append(Build.BRAND)
-                        .append('(').append(Build.MODEL).append(")\n");
+                msg.append(Build.BRAND).append('(').append(Build.MODEL).append(")\n");
 
                 String versionName = Build.VERSION.RELEASE;
                 int versionCode = Build.VERSION.SDK_INT;
-                msg.append("OS=").append("Android ").append(versionName)
+                msg.append("Android ").append(versionName)
                         .append('(').append(versionCode).append(")\n");
 
                 try {
@@ -105,8 +104,7 @@ public class MyApp extends Application implements Thread.UncaughtExceptionHandle
                     versionName = "unknown";
                     versionCode = -1;
                 }
-                msg.append("AppVersion=").append(versionName)
-                        .append('(').append(versionCode).append(")\n");
+                msg.append(versionName).append('(').append(versionCode).append(")\n");
 
                 Throwable e = cause;
                 do {
