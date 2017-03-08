@@ -25,7 +25,7 @@ public class BottomDialogBuilder {
         ((TextView) rootView.findViewById(R.id.message)).setText(message);
         AppCompatButton btnOK = (AppCompatButton) rootView.findViewById(R.id.btnOK);
         btnOK.setText("确认");
-        btnOK.setTextColor(BaseActivity.getColor(context, R.attr.titleTextColor));
+        btnOK.setTextColor(BaseActivity.getAttrColor(context, R.attr.titleTextColor));
         btnOK.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {

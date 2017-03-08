@@ -132,9 +132,9 @@ public abstract class ExplorerFragment extends Fragment {
                     context.getResources().getDimensionPixelSize(R.dimen.fileListPictureSize));
 
             sItemNormalBackground =
-                    BaseActivity.getColor(getContext(), android.R.attr.colorBackground);
+                    BaseActivity.getAttrColor(getContext(), android.R.attr.colorBackground);
             sItemSelectedBackground =
-                    BaseActivity.getColor(getContext(), R.attr.colorPrimary);
+                    BaseActivity.getAttrColor(getContext(), R.attr.colorPrimary);
             sItemSelectedBackground = (sItemSelectedBackground & 0x00FFFFFF) | 0x55000000;
         }
     }
@@ -518,7 +518,7 @@ public abstract class ExplorerFragment extends Fragment {
                 directory.setText(names.get(i));
                 directory.setAlpha(NORMAL_ALPHA);
                 directory.setTextSize(TypedValue.COMPLEX_UNIT_PX, mMediumTextSize);
-                directory.setTextColor(BaseActivity.getColor(getContext(), R.attr.titleTextColor));
+                directory.setTextColor(BaseActivity.getAttrColor(getContext(), R.attr.titleTextColor));
                 directory.setBackgroundResource(mTypedValue.resourceId);
                 directory.setPadding(mGap, 0, mGap, 0);
                 directory.setOnClickListener(this);

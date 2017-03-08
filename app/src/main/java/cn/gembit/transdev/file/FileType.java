@@ -11,6 +11,7 @@ import cn.gembit.transdev.R;
 import cn.gembit.transdev.activities.BaseActivity;
 import cn.gembit.transdev.app.AppConfig;
 
+@SuppressWarnings("WeakerAccess")
 public class FileType {
 
     public final static int DIR = 0;
@@ -112,7 +113,7 @@ public class FileType {
             drawables[i][0] = ContextCompat.getDrawable(context, AppConfig.readFileIconBgId());
         }
 
-        drawables[DIR][0].setColorFilter(BaseActivity.getColor(context, R.attr.colorPrimary),
+        drawables[DIR][0].setColorFilter(BaseActivity.getAttrColor(context, R.attr.colorPrimary),
                 PorterDuff.Mode.SRC_ATOP);
         drawables[FILE_APK][0].setColorFilter(0xff43a047, PorterDuff.Mode.SRC_ATOP);
         drawables[FILE_ARCHIVE][0].setColorFilter(0xff795548, PorterDuff.Mode.SRC_ATOP);

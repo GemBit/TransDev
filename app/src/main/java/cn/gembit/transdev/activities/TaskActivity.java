@@ -45,7 +45,7 @@ public class TaskActivity extends BaseActivity {
             actionBar.setDisplayHomeAsUpEnabled(true);
             Drawable drawable = toolbar.getNavigationIcon();
             if (drawable != null) {
-                drawable.setColorFilter(BaseActivity.getColor(this, R.attr.titleTextColor),
+                drawable.setColorFilter(BaseActivity.getAttrColor(this, R.attr.titleTextColor),
                         PorterDuff.Mode.SRC_ATOP);
             }
         }
@@ -225,8 +225,8 @@ public class TaskActivity extends BaseActivity {
                 }
 
                 ViewCompat.setBackgroundTintList(holder.mBtnKillTask, ColorStateList.valueOf(
-                        BaseActivity.getColor(TaskActivity.this, android.R.attr.colorBackground)));
-                holder.mBtnKillTask.setTextColor(BaseActivity.getColor(TaskActivity.this,
+                        BaseActivity.getAttrColor(TaskActivity.this, android.R.attr.colorBackground)));
+                holder.mBtnKillTask.setTextColor(BaseActivity.getAttrColor(TaskActivity.this,
                         android.R.attr.textColor));
                 holder.mBtnKillTask.setEnabled(false);
             }

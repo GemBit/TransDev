@@ -45,14 +45,15 @@ import java.util.LinkedList;
 import java.util.Map;
 
 import cn.gembit.transdev.R;
+import cn.gembit.transdev.app.AliveKeeper;
+import cn.gembit.transdev.app.AppConfig;
 import cn.gembit.transdev.app.MyApp;
 import cn.gembit.transdev.file.FilePath;
-import cn.gembit.transdev.app.AliveKeeper;
+import cn.gembit.transdev.widgets.BottomDialogBuilder;
 import cn.gembit.transdev.work.ClientAction;
 import cn.gembit.transdev.work.ConnectionBroadcast;
 import cn.gembit.transdev.work.ServerWrapper;
 import cn.gembit.transdev.work.TaskService;
-import cn.gembit.transdev.widgets.BottomDialogBuilder;
 
 public class MainActivity extends BaseActivity
         implements NavigationView.OnNavigationItemSelectedListener {
@@ -300,6 +301,11 @@ public class MainActivity extends BaseActivity
         LocalBookmark.restore(this);
         ClientBookmark.restore(this);
         ServerBookmark.restore(this);
+        if (AppConfig.isNewInstallation()) {
+            LocalBookmark.create("默认存储器",
+                    new FilePath(Environment.getExternalStorageDirectory().getPath()));
+            addBookmarkMenuItem(R.id.groupLocal, "默认存储器");
+        }
 
         mSwtServer = new SwitchCompat(this);
         mSwtServer.setChecked(false);
@@ -536,7 +542,7 @@ public class MainActivity extends BaseActivity
 
         ImageView imageView = new ImageView(this);
         Drawable drawable = ContextCompat.getDrawable(this, R.drawable.ic_close);
-        drawable.setColorFilter(BaseActivity.getColor(this, android.R.attr.textColor),
+        drawable.setColorFilter(BaseActivity.getAttrColor(this, android.R.attr.textColor),
                 PorterDuff.Mode.SRC_ATOP);
         imageView.setImageDrawable(drawable);
 
@@ -576,7 +582,7 @@ public class MainActivity extends BaseActivity
 
         ImageView imageView = new ImageView(this);
         Drawable drawable = ContextCompat.getDrawable(this, R.drawable.ic_config);
-        drawable.setColorFilter(BaseActivity.getColor(this, android.R.attr.textColor),
+        drawable.setColorFilter(BaseActivity.getAttrColor(this, android.R.attr.textColor),
                 PorterDuff.Mode.SRC_ATOP);
         imageView.setImageDrawable(drawable);
 
@@ -882,18 +888,9 @@ public class MainActivity extends BaseActivity
             SharedPreferences preferences = MyApp.getSharedPreferences(BOOKMARK_FILE);
             Map<String, ?> saved = preferences.getAll();
 
-            final String hasWritten = "hasWritten";
-            if (saved.get(hasWritten) == null) {
-                create("默认存储器",
-                        new FilePath(Environment.getExternalStorageDirectory().getPath()));
-                preferences.edit().putBoolean(hasWritten, true).apply();
-            }
-
             for (String key : saved.keySet()) {
-                if (!key.equals(hasWritten)) {
-                    mMap.put(key, new FilePath((String) saved.get(key)));
-                    activity.addBookmarkMenuItem(R.id.groupLocal, key);
-                }
+                mMap.put(key, new FilePath((String) saved.get(key)));
+                activity.addBookmarkMenuItem(R.id.groupLocal, key);
             }
         }
 

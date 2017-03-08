@@ -15,10 +15,21 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 
--dontwarn org.apache.**
--keep class org.apache.** { *;}
--keep interface org.apache.** { *;}
+-dontwarn org.apache.commons.net.**
+-keep class org.apache.commons.net.** { *;}
+-keep interface org.apache.commons.net.** { *;}
+
+-dontwarn org.apache.ftpserver.**
+-keep class org.apache.ftpserver.** { *;}
+-keep interface org.apache.ftpserver.** { *;}
+
+-dontwarn org.apache.mina.**
+-keep class org.apache.mina.** { *;}
+-keep interface org.apache.mina.** { *;}
 
 -dontwarn org.slf4j.**
 -keep class org.slf4j.** { *;}
 -keep interface org.slf4j.** { *;}
+
+-keepclassmembers class cn.gembit.transdev.R$* {public static <fields>;}
+-keep class cn.gembit.transdev.R$*

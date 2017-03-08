@@ -7,6 +7,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+@SuppressWarnings("WeakerAccess")
 public class FileMeta implements Comparable<FileMeta> {
 
     private final static SimpleDateFormat TIME_FORMAT =

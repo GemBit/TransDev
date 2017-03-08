@@ -67,7 +67,7 @@ public class ClientExplorerFragment extends ExplorerFragment {
                 @Override
                 protected Argument onCreateArgument() {
                     Argument.Disconnect argument = new Argument.Disconnect();
-                    argument.ftpClient = mClient;
+                    argument.client = mClient;
                     return argument;
                 }
 

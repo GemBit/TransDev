@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+@SuppressWarnings("WeakerAccess")
 public class FilePath {
 
     public final String pathString;
@@ -75,16 +76,19 @@ public class FilePath {
     }
 
     public FilePath getChild(String name) {
-        if (name.equals(".")) {
-            return this;
-        } else if (name.equals("..")) {
-            return getParent();
-        } else {
-            if (pathString.charAt(pathString.length() - 1) != mSeparatorChar) {
-                return new FilePath(pathString + mSeparatorChar + name, mSeparatorChar);
-            } else {
-                return new FilePath(pathString + name, mSeparatorChar);
-            }
+        switch (name) {
+            case ".":
+                return this;
+
+            case "..":
+                return getParent();
+
+            default:
+                if (pathString.charAt(pathString.length() - 1) != mSeparatorChar) {
+                    return new FilePath(pathString + mSeparatorChar + name, mSeparatorChar);
+                } else {
+                    return new FilePath(pathString + name, mSeparatorChar);
+                }
         }
     }
 

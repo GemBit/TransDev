@@ -51,13 +51,13 @@ public class WaitView extends FrameLayout {
         ImageView background = new ImageView(getContext());
         background.setImageDrawable(
                 ContextCompat.getDrawable(getContext(), R.drawable.ic_wait_background));
-        background.setColorFilter(BaseActivity.getColor(getContext(), R.attr.colorAccent));
+        background.setColorFilter(BaseActivity.getAttrColor(getContext(), R.attr.colorAccent));
         addView(background, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
         ImageView foreground = new ImageView(getContext());
         foreground.setImageDrawable(
                 ContextCompat.getDrawable(getContext(), R.drawable.ic_wait_foreground));
-        foreground.setColorFilter(BaseActivity.getColor(getContext(), R.attr.colorPrimary));
+        foreground.setColorFilter(BaseActivity.getAttrColor(getContext(), R.attr.colorPrimary));
         addView(foreground, LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
 
         mHandler = new Handler();

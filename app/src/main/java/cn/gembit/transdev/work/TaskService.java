@@ -7,6 +7,7 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.os.IBinder;
+import android.os.Looper;
 import android.support.annotation.Nullable;
 import android.support.v7.app.NotificationCompat;
 import android.widget.Toast;
@@ -29,11 +30,11 @@ import java.util.LinkedList;
 import java.util.List;
 
 import cn.gembit.transdev.R;
+import cn.gembit.transdev.activities.TaskActivity;
 import cn.gembit.transdev.app.AliveKeeper;
 import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
-import cn.gembit.transdev.activities.TaskActivity;
 
 public class TaskService extends Service {
 
@@ -438,7 +439,7 @@ public class TaskService extends Service {
     public int onStartCommand(Intent intent, int flags, int startId) {
         int index = intent.getIntExtra("index", -1);
         if (index >= 0 && index < TASKS.size()) {
-            new Thread(new TaskRunnable(TASKS.get(index))).start();
+            new Thread(TASKS.get(index)).start();
         }
 
         ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE))
@@ -447,163 +448,7 @@ public class TaskService extends Service {
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private static class TaskRunnable implements Runnable {
-
-        private final Task mTask;
-
-        private TaskRunnable(Task task) {
-            mTask = task;
-        }
-
-        private static boolean connect(final GlobalClipboard.Source.Client clientTypeSrc,
-                                       final GlobalClipboard.Destination.Client clientTypeDest) {
-
-            final boolean[] error = new boolean[2];
-
-            if (clientTypeSrc != null) {
-                new ClientAction() {
-                    @Override
-                    protected Argument onCreateArgument() {
-                        return clientTypeSrc.connectArg;
-                    }
-
-                    @Override
-                    protected void onResultOut(Result result) {
-                        Result.Connect theResult = (Result.Connect) result;
-                        error[0] = theResult.error;
-                        clientTypeSrc.client = theResult.ftpClient;
-                    }
-                }.start(false);
-            }
-
-            if (clientTypeDest != null) {
-                new ClientAction() {
-                    @Override
-                    protected Argument onCreateArgument() {
-                        return clientTypeDest.connectArg;
-                    }
-
-                    @Override
-                    protected void onResultOut(Result result) {
-                        Result.Connect theResult = (Result.Connect) result;
-                        error[1] = theResult.error;
-                        clientTypeDest.client = theResult.ftpClient;
-                    }
-                }.start(false);
-            }
-
-            return !error[0] && !error[1];
-        }
-
-        private static void disconnect(final GlobalClipboard.Source.Client clientTypeSrc,
-                                       final GlobalClipboard.Destination.Client clientTypeDest) {
-            if (clientTypeSrc != null) {
-                new ClientAction() {
-                    @Override
-                    protected Argument onCreateArgument() {
-                        Argument.Disconnect argument = new Argument.Disconnect();
-                        argument.ftpClient = clientTypeSrc.client;
-                        return argument;
-                    }
-
-                    @Override
-                    protected void onResultOut(Result result) {
-                    }
-                }.start(false);
-            }
-
-            if (clientTypeDest != null) {
-                new ClientAction() {
-                    @Override
-                    protected Argument onCreateArgument() {
-                        Argument.Disconnect argument = new Argument.Disconnect();
-                        argument.ftpClient = clientTypeDest.client;
-                        return argument;
-                    }
-
-                    @Override
-                    protected void onResultOut(Result result) {
-                    }
-                }.start(false);
-            }
-        }
-
-        @Override
-        public void run() {
-            boolean srcIsLocal = mTask.source instanceof GlobalClipboard.Source.Local;
-            boolean destIsLocal = mTask.destination instanceof GlobalClipboard.Destination.Local;
-
-            GlobalClipboard.Source.Client clientTypeSrc = !srcIsLocal ?
-                    (GlobalClipboard.Source.Client) mTask.source : null;
-            GlobalClipboard.Destination.Client clientTypeDest = !destIsLocal ?
-                    (GlobalClipboard.Destination.Client) mTask.destination : null;
-
-            if (mTask.status != Task.STATUS.interrupted && connect(clientTypeSrc, clientTypeDest)) {
-
-                for (FileMeta meta : mTask.source.fileMetaCollection) {
-                    mTask.mSrcPathQueue.add(mTask.source.dir.getChild(meta.name));
-                    if (meta.type == FileType.DIR) {
-                        mTask.mSrcTypeQueue.add(true);
-                        mTask.dirTotal++;
-                    } else {
-                        mTask.mSrcTypeQueue.add(false);
-                        mTask.fileTotal++;
-                        mTask.sizeTotal += meta.numericalSize;
-                    }
-                }
-
-                synchronized (mTask) {
-                    if (mTask.status != Task.STATUS.interrupted) {
-                        mTask.status = Task.STATUS.analyzing;
-                    }
-                }
-
-                if (srcIsLocal) {
-                    analyzeLocalSource(mTask, 0);
-                } else {
-                    analyzeClientSource(mTask, 0);
-                }
-
-                if (destIsLocal) {
-                    analyzeLocalDestination(mTask);
-                } else {
-                    analyzeClientDestination(mTask);
-                }
-
-                generateDestinationPath(mTask);
-
-                synchronized (mTask) {
-                    if (mTask.status != Task.STATUS.interrupted) {
-                        mTask.status = Task.STATUS.transferring;
-                    }
-                }
-                if (srcIsLocal && destIsLocal) {
-                    localToLocal(mTask);
-                }
-                if (srcIsLocal && !destIsLocal) {
-                    localToClient(mTask);
-                }
-                if (!srcIsLocal && destIsLocal) {
-                    clientToLocal(mTask);
-                }
-                if (!srcIsLocal && !destIsLocal) {
-                    clientToClient(mTask);
-                }
-
-                synchronized (mTask) {
-                    if (mTask.status != Task.STATUS.interrupted) {
-                        mTask.status = Task.STATUS.deleting;
-                    }
-                }
-                deleteIfCut(mTask);
-            }
-
-            disconnect(clientTypeSrc, clientTypeDest);
-            mTask.release();
-        }
-    }
-
-    public static class Task {
+    public static class Task implements Runnable {
         public final GlobalClipboard.Source source;
         public final GlobalClipboard.Destination destination;
 
@@ -633,6 +478,155 @@ public class TaskService extends Service {
         public Task(GlobalClipboard.Source source, GlobalClipboard.Destination destination) {
             this.source = source;
             this.destination = destination;
+        }
+
+        private boolean connect() {
+
+            final boolean[] error = new boolean[2];
+
+            if (source instanceof GlobalClipboard.Source.Client) {
+                new ClientAction() {
+                    @Override
+                    protected Argument onCreateArgument() {
+                        return ((GlobalClipboard.Source.Client) source).connectArg;
+                    }
+
+                    @Override
+                    protected void onResultOut(Result result) {
+                        Result.Connect theResult = (Result.Connect) result;
+                        error[0] = theResult.error;
+                        ((GlobalClipboard.Source.Client) source).client = theResult.ftpClient;
+                    }
+                }.start(Looper.myLooper() == Looper.getMainLooper());
+            } else {
+                error[0] = false;
+            }
+
+            if (destination instanceof GlobalClipboard.Destination.Client) {
+                new ClientAction() {
+                    @Override
+                    protected Argument onCreateArgument() {
+                        return ((GlobalClipboard.Destination.Client) destination).connectArg;
+                    }
+
+                    @Override
+                    protected void onResultOut(Result result) {
+                        Result.Connect theResult = (Result.Connect) result;
+                        error[1] = theResult.error;
+                        ((GlobalClipboard.Destination.Client) destination).client
+                                = theResult.ftpClient;
+                    }
+                }.start(Looper.myLooper() == Looper.getMainLooper());
+            } else {
+                error[1] = false;
+            }
+
+            return !error[0] && !error[1];
+        }
+
+        private void disconnect() {
+            if (source instanceof GlobalClipboard.Source.Client
+                    && ((GlobalClipboard.Source.Client) source).client != null) {
+                new ClientAction() {
+                    @Override
+                    protected Argument onCreateArgument() {
+                        Argument.Disconnect argument = new Argument.Disconnect();
+                        argument.client = ((GlobalClipboard.Source.Client) source).client;
+                        return argument;
+                    }
+
+                    @Override
+                    protected void onResultOut(Result result) {
+                        ((GlobalClipboard.Source.Client) source).client = null;
+                    }
+                }.start(Looper.myLooper() == Looper.getMainLooper());
+            }
+
+            if (destination instanceof GlobalClipboard.Destination.Client
+                    && ((GlobalClipboard.Destination.Client) destination).client != null) {
+                new ClientAction() {
+                    @Override
+                    protected Argument onCreateArgument() {
+                        Argument.Disconnect argument = new Argument.Disconnect();
+                        argument.client = ((GlobalClipboard.Destination.Client) destination).client;
+                        return argument;
+                    }
+
+                    @Override
+                    protected void onResultOut(Result result) {
+                        ((GlobalClipboard.Destination.Client) destination).client = null;
+                    }
+                }.start(Looper.myLooper() == Looper.getMainLooper());
+            }
+        }
+
+        @Override
+        public void run() {
+            boolean srcIsLocal = source instanceof GlobalClipboard.Source.Local;
+            boolean destIsLocal = destination instanceof GlobalClipboard.Destination.Local;
+
+            if (status != Task.STATUS.interrupted && connect()) {
+
+                for (FileMeta meta : source.fileMetaCollection) {
+                    mSrcPathQueue.add(source.dir.getChild(meta.name));
+                    if (meta.type == FileType.DIR) {
+                        mSrcTypeQueue.add(true);
+                        dirTotal++;
+                    } else {
+                        mSrcTypeQueue.add(false);
+                        fileTotal++;
+                        sizeTotal += meta.numericalSize;
+                    }
+                }
+
+                synchronized (this) {
+                    if (status != Task.STATUS.interrupted) {
+                        status = Task.STATUS.analyzing;
+                    }
+                }
+
+                if (srcIsLocal) {
+                    analyzeLocalSource(this, 0);
+                } else {
+                    analyzeClientSource(this, 0);
+                }
+
+                if (destIsLocal) {
+                    analyzeLocalDestination(this);
+                } else {
+                    analyzeClientDestination(this);
+                }
+
+                generateDestinationPath(this);
+
+                synchronized (this) {
+                    if (status != Task.STATUS.interrupted) {
+                        status = Task.STATUS.transferring;
+                    }
+                }
+                if (srcIsLocal && destIsLocal) {
+                    localToLocal(this);
+                }
+                if (srcIsLocal && !destIsLocal) {
+                    localToClient(this);
+                }
+                if (!srcIsLocal && destIsLocal) {
+                    clientToLocal(this);
+                }
+                if (!srcIsLocal && !destIsLocal) {
+                    clientToClient(this);
+                }
+
+                synchronized (this) {
+                    if (status != Task.STATUS.interrupted) {
+                        status = Task.STATUS.deleting;
+                    }
+                }
+                deleteIfCut(this);
+            }
+
+            disconnect();
+            release();
         }
 
         public synchronized void kill() {

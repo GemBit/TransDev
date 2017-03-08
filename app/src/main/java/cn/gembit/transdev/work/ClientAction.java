@@ -9,7 +9,6 @@ import org.apache.commons.net.ftp.FTPFileFilter;
 import org.apache.commons.net.ftp.FTPReply;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 
@@ -17,6 +16,7 @@ import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
 
+@SuppressWarnings("WeakerAccess")
 public abstract class ClientAction {
 
     public final static FTPFileFilter ONLY_CHILD_FILTER = new FTPFileFilter() {
@@ -100,11 +100,11 @@ public abstract class ClientAction {
                     result.error = workingDir == null;
                 }
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             if (result.ftpClient.isConnected()) {
                 try {
                     result.ftpClient.disconnect();
-                } catch (IOException ex) {
+                } catch (Exception ex) {
                     result.error = true;
                 }
             }
@@ -119,7 +119,7 @@ public abstract class ClientAction {
             if (argument.ftpClient != null && argument.dir != null) {
                 files = argument.ftpClient.listFiles((argument.dir.pathString), ONLY_CHILD_FILTER);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             files = null;
         }
 
@@ -137,7 +137,7 @@ public abstract class ClientAction {
             try {
                 result.connectionBroken =
                         argument.ftpClient == null || !argument.ftpClient.sendNoOp();
-            } catch (IOException e) {
+            } catch (Exception e) {
                 result.connectionBroken = true;
             }
         }
@@ -153,7 +153,7 @@ public abstract class ClientAction {
                 result.error = !argument.ftpClient.storeFile(argument.path.pathString,
                         new ByteArrayInputStream(new byte[0]));
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             result.error = true;
         }
         return result;
@@ -183,7 +183,7 @@ public abstract class ClientAction {
             } else {
                 return ftpClient.deleteFile(path.pathString);
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             return false;
         }
     }
@@ -193,7 +193,7 @@ public abstract class ClientAction {
         try {
             result.error = !argument.ftpClient.rename(
                     argument.oldPath.pathString, argument.newPath.pathString);
-        } catch (IOException e) {
+        } catch (Exception e) {
             result.error = true;
         }
         return result;
@@ -235,7 +235,7 @@ public abstract class ClientAction {
                 } else {
                     result.failed++;
                 }
-            } catch (IOException e) {
+            } catch (Exception e) {
                 result.failed++;
             }
         }
@@ -244,12 +244,12 @@ public abstract class ClientAction {
 
     private Result.Disconnect disconnect(Argument.Disconnect argument) {
         Result.Disconnect result = new Result.Disconnect();
-        if (argument.ftpClient != null) {
+        if (argument.client != null) {
             try {
-                argument.ftpClient.logout();
-                argument.ftpClient.disconnect();
+                argument.client.logout();
+                argument.client.disconnect();
                 result.error = false;
-            } catch (IOException e) {
+            } catch (Exception e) {
                 result.error = true;
             }
         }
@@ -302,7 +302,7 @@ public abstract class ClientAction {
         }
 
         class Disconnect implements Argument {
-            public FTPClient ftpClient;
+            public FTPClient client;
         }
     }
 

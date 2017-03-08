@@ -36,6 +36,7 @@ import cn.gembit.transdev.app.MyApp;
 import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 
+@SuppressWarnings("WeakerAccess")
 public class ServerWrapper {
 
     public final static int RECORD_SUCCESS = 0;

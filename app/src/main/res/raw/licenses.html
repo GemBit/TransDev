@@ -5,30 +5,78 @@
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 
     <style type="text/css">
-    a {
+
+    .title {
+        color: #000000
+    }
+
+    .weblink {
+        color: #0000ff;
         white-space: normal;
         word-wrap: break-word;
     }
-    pre {
+
+    .license {
         padding: 0.5em;
-        background: #cacaca;
+        background: rgba(0, 0, 0, 0.3);
+        color: #000000;
         white-space: pre-wrap;
         word-wrap: break-word;
     }
     </style>
 
+    <script>
+     function setColor() {
+        var textColor = parseInt(getQueryString("textColor"));
+        var accentColor = parseInt(getQueryString("accentColor"));
+        var licenseBackgroundColor = textColor;
+
+        textColor = "#" + (textColor & 0xffffff).toString(16);
+        accentColor = "#" + (accentColor & 0xffffff).toString(16);
+
+        licenseBackgroundColor = "rgba(" + ((licenseBackgroundColor & 0xff0000) >> 16) + ", "
+            + ((licenseBackgroundColor & 0x00ff00) >> 8) + ", "
+            + ((licenseBackgroundColor & 0x0000ff) >> 0) + ", "
+            + 0.25 + ")";
+
+	    var ele = document.getElementsByClassName("license");
+	    for (var i = 0; i < ele.length; i++) {
+    	    ele[i].style.color = textColor;
+    	    ele[i].style.background = licenseBackgroundColor;
+        }
+
+        ele = document.getElementsByClassName("title");
+	    for (var i = 0; i < ele.length; i++) {
+    	    ele[i].style.color = textColor;
+        }
+
+        ele = document.getElementsByClassName("weblink");
+	    for (var i = 0; i < ele.length; i++) {
+    	    ele[i].style.color = accentColor;
+        }
+     }
+
+    function getQueryString(name) {
+	    var reg = new RegExp('(^|&)' + name + '=([^&]*)(&|$)', 'i');
+	    var r = window.location.search.substr(1).match(reg);
+	    if (r != null) {
+		    return unescape(r[2]);
+        }
+    }
+    </script>
+
 </head>
 
-<body>
+<body style="background: rgba(255, 255, 255, 0);" onload="setColor()">
 
-<ul><li>
+<ul><li class="title">
     Apache Commons Net<br />
-    <a href="https://commons.apache.org/proper/commons-net/">
+    <a  class="weblink" href="https://commons.apache.org/proper/commons-net/">
         https://commons.apache.org/proper/commons-net/</a>
 </li></ul>
 
 <code>
-<pre>
+<pre class="license">
 Copyright Apache Commons
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -46,14 +94,14 @@ limitations under the License.
 </code>
 
 
-<ul><li>
+<ul><li class="title">
     Apache FtpServer<br />
-    <a href="https://mina.apache.org/ftpserver-project/">
+    <a class="weblink" href="https://mina.apache.org/ftpserver-project/">
     https://mina.apache.org/ftpserver-project/</a>
 </li></ul>
 
 <code>
-<pre>
+<pre class="license">
 Copyright Apache FtpServer
 
 Licensed under the Apache License, Version 2.0 (the "License");
@@ -71,13 +119,13 @@ limitations under the License.
 </code>
 
 
-<ul><li>
-    SLF4j<br />
-    <a href="https://www.slf4j.org/">https://www.slf4j.org/</a>
+<ul><li class="title">
+    SLF4J<br />
+    <a class="weblink" href="https://www.slf4j.org/">https://www.slf4j.org/</a>
 </li></ul>
 
 <code>
-<pre>
+<pre class="license">
 Copyright (c) 2004-2017 QOS.ch
 All rights reserved.
 

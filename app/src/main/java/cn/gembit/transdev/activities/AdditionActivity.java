@@ -1,11 +1,11 @@
 package cn.gembit.transdev.activities;
 
 
+import android.annotation.SuppressLint;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.graphics.PorterDuff;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
@@ -19,7 +19,6 @@ import android.view.ViewGroup;
 import android.webkit.WebView;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.ExpandableListView;
-import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -46,16 +45,19 @@ public class AdditionActivity extends BaseActivity
                 new OptionItem("开源许可", "软件所使用的第三方开源库"),
                 new OptionItem("图片素材", "软件所使用各种图标资源等"));
 
-        OPTIONS[1] = new OptionGroup("应用",
-                new OptionItem("使用说明", "基本使用概述和若干操作细节"),
-                new OptionItem("检查更新", "当前版本：1.0"));
-
-        OPTIONS[2] = new OptionGroup("个性化",
+        OPTIONS[1] = new OptionGroup("个性化",
                 new OptionItem("界面主题", null),
                 new OptionItem("文件图标", null));
+
+        OPTIONS[2] = new OptionGroup("应用",
+                new OptionItem("使用说明", "基本使用概述和若干操作细节"),
+                new OptionItem("检查更新", null),
+                new OptionItem("退出应用", "结束全部后台并退出应用"));
     }
 
     private AdditionOptionAdapter mAdapter;
+
+    private int mCurVersionCode;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -69,13 +71,25 @@ public class AdditionActivity extends BaseActivity
             actionBar.setDisplayHomeAsUpEnabled(true);
             Drawable drawable = toolbar.getNavigationIcon();
             if (drawable != null) {
-                drawable.setColorFilter(BaseActivity.getColor(this, R.attr.titleTextColor),
+                drawable.setColorFilter(BaseActivity.getAttrColor(this, R.attr.titleTextColor),
                         PorterDuff.Mode.SRC_ATOP);
             }
         }
 
-        OPTIONS[2].mItems[0].mSubtitle = ThemeOption.getNameById(AppConfig.readThemeID());
-        OPTIONS[2].mItems[1].mSubtitle = FileIconOption.getNameById(AppConfig.readFileIconBgId());
+        String curVersionName;
+        try {
+            PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
+            mCurVersionCode = info.versionCode;
+            curVersionName = info.versionName;
+        } catch (PackageManager.NameNotFoundException e) {
+            mCurVersionCode = -1;
+            curVersionName = "N/A";
+        }
+
+        OPTIONS[2].mItems[1].mSubtitle = "当前版本：" + curVersionName;
+
+        OPTIONS[1].mItems[0].mSubtitle = ThemeOption.getNameById(AppConfig.readThemeID());
+        OPTIONS[1].mItems[1].mSubtitle = FileIconOption.getNameById(AppConfig.readFileIconBgId());
 
         ExpandableListView listView = (ExpandableListView) findViewById(R.id.additionList);
         listView.setAdapter(mAdapter = new AdditionOptionAdapter());
@@ -97,46 +111,55 @@ public class AdditionActivity extends BaseActivity
     @Override
     public boolean onChildClick(
             ExpandableListView parent, View v, int groupPosition, int childPosition, long id) {
+        OptionItem item = OPTIONS[groupPosition].mItems[childPosition];
 
         if (groupPosition == 0) {
 
             if (childPosition == 0) {
-                dialogForLibs(OPTIONS[0].mItems[0]);
+                dialogForLibs(item);
 
             } else if (childPosition == 1) {
-                dialogForIcons(OPTIONS[0].mItems[1]);
+                dialogForIcons(item);
             }
 
         } else if (groupPosition == 1) {
 
             if (childPosition == 0) {
-                dialogForTips(OPTIONS[1].mItems[0]);
-
+                ThemeOption.makeChoiceDialog(this, item);
             } else if (childPosition == 1) {
-                new OptionCheckUpdate().dialogForUpdate(OPTIONS[1].mItems[1]);
+                FileIconOption.makeChoiceDialog(this, item);
             }
 
         } else if (groupPosition == 2) {
 
             if (childPosition == 0) {
-                ThemeOption.makeChoiceDialog(this, OPTIONS[2].mItems[0]);
-            } else if (childPosition == 1) {
-                FileIconOption.makeChoiceDialog(this, OPTIONS[2].mItems[1]);
-            }
+                dialogForTips(item);
 
+            } else if (childPosition == 1) {
+                new OptionCheckUpdate().dialogForUpdate(item);
+
+            } else if (childPosition == 2) {
+                dialogForExit(item);
+            }
         }
 
         return true;
     }
 
     @SuppressWarnings("deprecation")
+    @SuppressLint("SetJavaScriptEnabled")
     private void dialogForLibs(OptionItem item) {
-        WebView wv = new WebView(this);
-        wv.loadUrl("file:///android_res/raw/licenses.html");
+        int textColor = BaseActivity.getAttrColor(this, android.R.attr.textColor);
+        int accentColor = BaseActivity.getAttrColor(this, R.attr.colorAccent);
+        WebView webView = new WebView(this);
+        webView.setBackgroundColor(0x00ffffff);
+        webView.getSettings().setJavaScriptEnabled(true);
+        webView.loadUrl("file:///android_res/raw/licenses.html?textColor=" +
+                textColor + "&accentColor=" + accentColor);
 
-        new AlertDialog.Builder(this, R.style.Theme_AppCompat_Light)
+        new AlertDialog.Builder(this)
                 .setTitle(item.mTitle)
-                .setView(wv)
+                .setView(webView)
                 .setNegativeButton("确定", null)
                 .show();
 
@@ -160,7 +183,7 @@ public class AdditionActivity extends BaseActivity
                 .setTitle(item.mTitle)
                 .setMessage("大体上,软件的功能可以分为三个部分：\n" +
                         "1、作为文件浏览器，可以对本地文件进行查增删改等操作\n" +
-                        "2、作为FTP客户端，可以连接对远程文件进行管理\n" +
+                        "2、作为FTP客户端，可以对远程文件进行各种操作\n" +
                         "3、作为FTP服务器，将本地文件的部分或全部文件进行局域网共享\n\n" +
                         "在主界面的侧拉栏，可对本地文件添加路径收藏，保存远程主机，管理FTP共享账户，" +
                         "还可以跳转到或者删除已打开窗口\n\n" +
@@ -173,6 +196,21 @@ public class AdditionActivity extends BaseActivity
                         "在单个文件被选中后，再次点击可以有更多打开方式\n\n" +
                         "在路径栏长按可以复制对应路径到剪切板\n\n" +
                         "已复制文件，长按粘贴按钮，可以取消之")
+                .show();
+    }
+
+    private void dialogForExit(OptionItem item) {
+        new AlertDialog.Builder(this)
+                .setCancelable(false)
+                .setTitle(item.mTitle)
+                .setMessage("确定退出？")
+                .setNegativeButton("取消", null)
+                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        BaseActivity.exit();
+                    }
+                })
                 .show();
     }
 
@@ -198,7 +236,7 @@ public class AdditionActivity extends BaseActivity
 
     private static class ThemeOption {
         private static int[] sIds = new int[]{R.style.AppTheme_Dark, R.style.AppTheme_Light};
-        private static String[] sNames = new String[]{"深色", "浅色"};
+        private static String[] sNames = new String[]{"深暗", "浅亮"};
 
         private static String getNameById(int themeId) {
             for (int i = 0; i < sIds.length; i++) {
@@ -275,25 +313,35 @@ public class AdditionActivity extends BaseActivity
     }
 
     private class OptionCheckUpdate {
-        AlertDialog mDialog;
+        private boolean mCancelled = false;
 
-        int mLatestVersionCode;
-        String mLatestVersionName;
-        String mLatestVersionDate;
-        String mDownloadLink;
-        String mDescription;
+        private int mVersionLag;
+        private String mDownloadLink;
+        private String mDescription;
 
-        private void dialogForUpdate(OptionItem item) {
+        private void dialogForUpdate(final OptionItem item) {
+            final AlertDialog dialog = new AlertDialog.Builder(AdditionActivity.this)
+                    .setCancelable(false)
+                    .setTitle(item.mTitle)
+                    .setView(new ProgressBar(AdditionActivity.this))
+                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            mCancelled = true;
+                        }
+                    })
+                    .show();
 
-            final Thread mCheckThread = new Thread(new Runnable() {
+            new Thread(new Runnable() {
                 @Override
                 public void run() {
                     HttpsURLConnection connection = null;
                     BufferedReader reader = null;
 
                     try {
-                        URL url = new URL("https://TransDev.GemBit.cn/Download/latest.txt");
-                        connection = (HttpsURLConnection) url.openConnection();
+                        connection = (HttpsURLConnection) new URL(
+                                "https://TransDev.GemBit.cn/Update.php?version=" + mCurVersionCode)
+                                .openConnection();
                         connection.setRequestMethod("GET");
                         connection.setUseCaches(false);
                         connection.setConnectTimeout(5000);
@@ -301,128 +349,72 @@ public class AdditionActivity extends BaseActivity
                         reader = new BufferedReader(
                                 new InputStreamReader(connection.getInputStream(), "UTF-8"));
 
-                        mLatestVersionCode = Integer.parseInt(reader.readLine());
-                        mLatestVersionName = reader.readLine();
-                        mLatestVersionDate = reader.readLine();
-                        mDownloadLink = reader.readLine();
+                        mVersionLag = Integer.parseInt(reader.readLine());
+                        if (mVersionLag > 0) {
+                            mDownloadLink = reader.readLine();
 
-                        StringBuilder sb = new StringBuilder();
-                        while ((mDescription = reader.readLine()) != null) {
-                            sb.append(mDescription);
+                            StringBuilder sb = new StringBuilder();
+                            while ((mDescription = reader.readLine()) != null) {
+                                sb.append(mDescription).append('\n');
+                            }
+                            mDescription = sb.toString();
                         }
-                        mDescription = sb.toString();
 
                     } catch (Exception e) {
-                        mLatestVersionCode = -1;
+                        mVersionLag = -1;
 
                     } finally {
                         if (reader != null) {
                             try {
                                 reader.close();
                             } catch (IOException e) {
-                                mLatestVersionCode = -1;
+                                mVersionLag = -1;
                             }
                         }
                         if (connection != null) {
                             connection.disconnect();
                         }
 
-                        if (!Thread.currentThread().isInterrupted()) {
+                        if (!mCancelled) {
                             AdditionActivity.this.runOnUiThread(new Runnable() {
                                 @Override
                                 public void run() {
+                                    dialog.dismiss();
                                     checkUpdateResult();
                                 }
                             });
                         }
                     }
                 }
-            });
-            mCheckThread.start();
-
-            ProgressBar progressBar = new ProgressBar(AdditionActivity.this);
-            mDialog = new AlertDialog.Builder(AdditionActivity.this)
-                    .setCancelable(false)
-                    .setTitle(item.mTitle)
-                    .setView(progressBar)
-                    .setNegativeButton("取消", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int which) {
-                            mCheckThread.interrupt();
-                        }
-                    })
-                    .show();
-
+            }).start();
         }
 
-        public void checkUpdateResult() {
-            PackageInfo info = null;
-            try {
-                info = AdditionActivity.this.getPackageManager()
-                        .getPackageInfo(AdditionActivity.this.getPackageName(), 0);
-            } catch (PackageManager.NameNotFoundException e) {
-                //
-            }
+        private void checkUpdateResult() {
+            AlertDialog.Builder builder = new AlertDialog.Builder(AdditionActivity.this)
+                    .setCancelable(false)
+                    .setMessage(mDescription)
+                    .setNegativeButton("取消", null);
 
-            int mLocalVersionCode = info.versionCode;
-            String mLocalVersionName = info.versionName;
-
-            mDialog.show();
-            if (mLatestVersionCode != -1) {
-                mDialog.setTitle("检查更新成功");
-                if (mLocalVersionCode == mLatestVersionCode) {
-                    mDialog.setMessage("已经是最新版本");
-                } else {
-                    LinearLayout container = new LinearLayout(AdditionActivity.this);
-                    container.setOrientation(LinearLayout.VERTICAL);
-                    container.setPadding(30, 30, 30, 30);
-
-                    TextView tv = new TextView(AdditionActivity.this);
-                    tv.setText("最新版本：".concat(mLatestVersionName));
-                    tv.setTextColor(Color.BLACK);
-                    container.addView(tv);
-
-                    tv = new TextView(AdditionActivity.this);
-                    tv.setText("\n已安装版本：".concat(mLocalVersionName));
-                    tv.setTextColor(Color.BLACK);
-                    container.addView(tv);
-
-                    tv = new TextView(AdditionActivity.this);
-                    tv.setText("\n更新日期：".concat(mLatestVersionDate));
-                    tv.setTextColor(Color.BLACK);
-                    container.addView(tv);
-
-                    tv = new TextView(AdditionActivity.this);
-                    tv.setText("\n新版说明：\n".concat(mDescription));
-                    tv.setTextColor(Color.BLACK);
-                    container.addView(tv);
-                    mDialog.setContentView(container);
-
-                    mDialog.getButton(DialogInterface.BUTTON_POSITIVE)
-                            .setOnClickListener(new View.OnClickListener() {
+            if (mVersionLag == -1) {
+                builder.setTitle("检查更新失败");
+            } else {
+                builder.setTitle("检查更新成功");
+                if (mVersionLag > 0) {
+                    builder.setMessage(mDescription)
+                            .setPositiveButton("下载", new DialogInterface.OnClickListener() {
                                 @Override
-                                public void onClick(View v) {
+                                public void onClick(DialogInterface dialog, int which) {
                                     AdditionActivity.this.startActivity(new Intent()
                                             .setAction("android.intent.action.VIEW")
                                             .setData(Uri.parse(mDownloadLink)));
-                                    mDialog.dismiss();
                                 }
                             });
-                    mDialog.getButton(DialogInterface.BUTTON_NEGATIVE)
-                            .setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    mDialog.dismiss();
-                                }
-                            });
-                    mDialog.getButton(DialogInterface.BUTTON_POSITIVE).setText("下载");
-                    mDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setText("取消");
-                    mDialog.show();
+                } else {
+                    builder.setMessage("已是最新版本");
                 }
-            } else {
-                mDialog.setTitle("检查更新失败");
-                mDialog.setMessage("请检查网络是否通畅");
             }
+
+            builder.show();
         }
     }
 

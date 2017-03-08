@@ -10,6 +10,7 @@ import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
 
+@SuppressWarnings("WeakerAccess")
 public class GlobalClipboard {
 
     private final static List<ClipboardActionCallback> CALLBACK_LIST = new ArrayList<>();

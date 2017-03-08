@@ -7,7 +7,6 @@ import android.graphics.Canvas;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Nullable;
-import android.support.v4.content.ContextCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -69,8 +68,8 @@ public class AutoFitRecyclerView extends RecyclerView {
 
     private static class DividerItemDecoration extends RecyclerView.ItemDecoration {
 
-        private int mGap;
         private final Rect mBounds = new Rect();
+        private int mGap;
         private Drawable mDivider;
 
         private DividerItemDecoration(Context context) {

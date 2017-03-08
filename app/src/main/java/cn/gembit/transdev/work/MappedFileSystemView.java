@@ -12,6 +12,7 @@ import java.util.List;
 
 import cn.gembit.transdev.file.FilePath;
 
+@SuppressWarnings("WeakerAccess")
 public class MappedFileSystemView implements FileSystemView {
 
     private FileSystemView mOriginalView;

@@ -12,6 +12,7 @@ import java.io.File;
 
 import cn.gembit.transdev.widgets.BottomDialogBuilder;
 
+@SuppressWarnings("WeakerAccess")
 public class FileOpener {
 
     public final static String[] GENERIC_TYPES =
