@@ -86,25 +86,20 @@ public class MyApp extends Application implements Thread.UncaughtExceptionHandle
         new Handler(Looper.getMainLooper()).postAtFrontOfQueue(new Runnable() {
             @Override
             public void run() {
-                cause.printStackTrace();
                 StringBuilder msg = new StringBuilder();
+
+                msg.append("Android\n");
+                msg.append(Build.VERSION.SDK_INT).append("\n");
 
                 msg.append(Build.BRAND).append('(').append(Build.MODEL).append(")\n");
 
-                String versionName = Build.VERSION.RELEASE;
-                int versionCode = Build.VERSION.SDK_INT;
-                msg.append("Android ").append(versionName)
-                        .append('(').append(versionCode).append(")\n");
-
                 try {
                     PackageInfo info = getPackageManager().getPackageInfo(getPackageName(), 0);
-                    versionName = info.versionName;
-                    versionCode = info.versionCode;
+                    msg.append(info.versionCode).append("\n");
                 } catch (PackageManager.NameNotFoundException e) {
-                    versionName = "unknown";
-                    versionCode = -1;
+                    msg.append(-1).append("\n");
                 }
-                msg.append(versionName).append('(').append(versionCode).append(")\n");
+
 
                 Throwable e = cause;
                 do {
