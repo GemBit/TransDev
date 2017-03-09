@@ -156,6 +156,7 @@ public class AdditionActivity extends BaseActivity
     private void dialogForLibs(OptionItem item) {
         int textColor = BaseActivity.getAttrColor(this, android.R.attr.textColor);
         int accentColor = BaseActivity.getAttrColor(this, R.attr.colorAccent);
+
         WebView webView = new WebView(this);
         webView.setBackgroundColor(0x00ffffff);
         webView.getSettings().setJavaScriptEnabled(true);

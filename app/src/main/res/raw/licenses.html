@@ -6,20 +6,13 @@
 
     <style type="text/css">
 
-    .title {
-        color: #000000
-    }
-
-    .weblink {
-        color: #0000ff;
+    .webLink {
         white-space: normal;
         word-wrap: break-word;
     }
 
     .license {
         padding: 0.5em;
-        background: rgba(0, 0, 0, 0.3);
-        color: #000000;
         white-space: pre-wrap;
         word-wrap: break-word;
     }
@@ -31,8 +24,8 @@
         var accentColor = parseInt(getQueryString("accentColor"));
         var licenseBackgroundColor = textColor;
 
-        textColor = "#" + (textColor & 0xffffff).toString(16);
-        accentColor = "#" + (accentColor & 0xffffff).toString(16);
+        textColor = "#" + ((textColor & 0xffffff) | 0xf000000).toString(16).substring(1);
+        accentColor = "#" + ((accentColor & 0xffffff) | 0xf000000).toString(16).substring(1);
 
         licenseBackgroundColor = "rgba(" + ((licenseBackgroundColor & 0xff0000) >> 16) + ", "
             + ((licenseBackgroundColor & 0x00ff00) >> 8) + ", "
@@ -50,7 +43,7 @@
     	    ele[i].style.color = textColor;
         }
 
-        ele = document.getElementsByClassName("weblink");
+        ele = document.getElementsByClassName("webLink");
 	    for (var i = 0; i < ele.length; i++) {
     	    ele[i].style.color = accentColor;
         }
@@ -71,7 +64,7 @@
 
 <ul><li class="title">
     Apache Commons Net<br />
-    <a  class="weblink" href="https://commons.apache.org/proper/commons-net/">
+    <a  class="webLink" href="https://commons.apache.org/proper/commons-net/">
         https://commons.apache.org/proper/commons-net/</a>
 </li></ul>
 
@@ -96,7 +89,7 @@ limitations under the License.
 
 <ul><li class="title">
     Apache FtpServer<br />
-    <a class="weblink" href="https://mina.apache.org/ftpserver-project/">
+    <a class="webLink" href="https://mina.apache.org/ftpserver-project/">
     https://mina.apache.org/ftpserver-project/</a>
 </li></ul>
 
@@ -121,7 +114,7 @@ limitations under the License.
 
 <ul><li class="title">
     SLF4J<br />
-    <a class="weblink" href="https://www.slf4j.org/">https://www.slf4j.org/</a>
+    <a class="webLink" href="https://www.slf4j.org/">https://www.slf4j.org/</a>
 </li></ul>
 
 <code>
