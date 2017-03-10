@@ -1,13 +1,14 @@
 package cn.gembit.transdev.widgets;
 
-import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.graphics.Point;
 import android.graphics.drawable.Drawable;
 import android.support.annotation.Px;
 import android.support.v4.content.ContextCompat;
-import android.support.v7.widget.CardView;
+import android.support.v4.view.ViewCompat;
+import android.support.v7.widget.AppCompatImageButton;
 import android.util.AttributeSet;
 import android.view.Gravity;
 import android.view.View;
@@ -15,12 +16,12 @@ import android.view.WindowManager;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.view.animation.AnimationSet;
+import android.view.animation.DecelerateInterpolator;
 import android.view.animation.Interpolator;
-import android.view.animation.OvershootInterpolator;
 import android.view.animation.RotateAnimation;
 import android.view.animation.TranslateAnimation;
+import android.widget.FrameLayout;
 import android.widget.GridLayout;
-import android.widget.ImageButton;
 import android.widget.TextView;
 
 import cn.gembit.transdev.R;
@@ -28,16 +29,16 @@ import cn.gembit.transdev.activities.BaseActivity;
 
 import static android.content.Context.WINDOW_SERVICE;
 
-public class FloatingActionButtonMenu extends CardView {
+public class FloatingActionButtonMenu extends FrameLayout {
 
-    private final static Interpolator ANIMATION_INTERPOLATOR = new OvershootInterpolator();
+    private final static Interpolator ANIMATION_INTERPOLATOR = new DecelerateInterpolator(2.0f);
 
     private final static RotateAnimation ROTATE_ANIMATION;
     private final static RotateAnimation REVERSE_ROTATE_ANIMATION;
     private final static AlphaAnimation APPEAR_ALPHA_ANIMATION;
     private final static AlphaAnimation DISAPPEAR_ALPHA_ANIMATION;
 
-    private final static int ANIMATION_DURATION = 350;
+    private final static int ANIMATION_DURATION = 250;
     private final static float ROTATE_ANGLE = -45f;
 
     static {
@@ -56,7 +57,7 @@ public class FloatingActionButtonMenu extends CardView {
     }
 
     private GridLayout mGridLayout;
-    private ImageButton mBaseButton;
+    private AppCompatImageButton mBaseButton;
     private SubItem[] mSubItems;
 
     private boolean mExpanded;
@@ -67,6 +68,8 @@ public class FloatingActionButtonMenu extends CardView {
 
     private int mDarkBackground;
     private int mTransparentBackground;
+
+    private ColorStateList mBackgroundTintList;
 
     public FloatingActionButtonMenu(Context context) {
         super(context);
@@ -92,14 +95,15 @@ public class FloatingActionButtonMenu extends CardView {
         mGridLayout.setPadding(fabGap, 0, fabGap, fabGap);
         addView(mGridLayout, params);
 
-        mGridLayout.setClipChildren(false);
-        mGridLayout.setClipToPadding(false);
-        setClipChildren(false);
-        setClipToPadding(false);
-
         mTransparentBackground = ContextCompat.getColor(getContext(), android.R.color.transparent);
         mDarkBackground = BaseActivity.getAttrColor(getContext(), android.R.attr.colorBackground);
         mDarkBackground = mDarkBackground & 0xffffff | 0x99000000;
+
+        mBackgroundTintList = new ColorStateList(
+                new int[][]{{android.R.attr.state_pressed},
+                        {}},
+                new int[]{BaseActivity.getAttrColor(getContext(), R.attr.colorAccentDark),
+                        BaseActivity.getAttrColor(getContext(), R.attr.colorAccent)});
     }
 
     public void setContents(int drawerModeIconId, int buttonModeIconId,
@@ -119,10 +123,10 @@ public class FloatingActionButtonMenu extends CardView {
         int fabNormal = getContext().getResources().getDimensionPixelSize(R.dimen.fabNormal);
         int fabMini = getContext().getResources().getDimensionPixelSize(R.dimen.fabMini);
 
-        mBaseButton = new ImageButton(getContext());
+        mBaseButton = new AppCompatImageButton(getContext());
         mBaseButton.setImageDrawable(mAtDrawerMode ? mDrawerModeIcon : mButtonModeIcon);
-        mBaseButton.setBackground(ContextCompat.getDrawable(getContext(), R.drawable.bg_floating_action_button));
-        mBaseButton.setId(View.generateViewId());
+        mBaseButton.setBackgroundResource(R.drawable.bg_circle);
+        ViewCompat.setBackgroundTintList(mBaseButton, mBackgroundTintList);
 
         GridLayout.LayoutParams params = new GridLayout.LayoutParams(
                 GridLayout.spec(mSubItems.length), GridLayout.spec(1));
@@ -198,7 +202,7 @@ public class FloatingActionButtonMenu extends CardView {
         mBaseButton.startAnimation(toExpandIt ? ROTATE_ANIMATION : REVERSE_ROTATE_ANIMATION);
 
         setClickable(toExpandIt);
-        setCardBackgroundColor(toExpandIt ? mDarkBackground : mTransparentBackground);
+        setBackgroundColor(toExpandIt ? mDarkBackground : mTransparentBackground);
 
         int visibility = toExpandIt ? VISIBLE : INVISIBLE;
 
@@ -271,7 +275,7 @@ public class FloatingActionButtonMenu extends CardView {
 
         private boolean mValid;
 
-        private ImageButton mButton;
+        private AppCompatImageButton mButton;
         private TextView mTitle;
 
         public SubItem(Context context, String text, int drawableId, OnClickListener listener) {
@@ -282,20 +286,19 @@ public class FloatingActionButtonMenu extends CardView {
             int vPadding = context.getResources()
                     .getDimensionPixelOffset(R.dimen.fabTitleVerticalPadding);
 
-            mButton = new ImageButton(context);
+            mButton = new AppCompatImageButton(context);
             mButton.setImageDrawable(ContextCompat.getDrawable(getContext(), drawableId));
-            mButton.setBackground(ContextCompat.getDrawable(
-                    getContext(), R.drawable.bg_floating_action_button));
-            mButton.setId(View.generateViewId());
+            mButton.setBackgroundResource(R.drawable.bg_circle);
+            ViewCompat.setBackgroundTintList(mButton, mBackgroundTintList);
             mButton.setOnClickListener(listener);
             mButton.setVisibility(INVISIBLE);
+            mButton.setId(View.generateViewId());
 
             mTitle = new TextView(context);
             mTitle.setTextColor(BaseActivity.getAttrColor(getContext(), R.attr.titleTextColor));
             mTitle.setBackgroundColor(BaseActivity.getAttrColor(getContext(), R.attr.colorAccent));
             mTitle.setText(text);
             mTitle.setPadding(hPadding, vPadding, hPadding, vPadding);
-            mTitle.setId(View.generateViewId());
             mTitle.setVisibility(INVISIBLE);
         }
 

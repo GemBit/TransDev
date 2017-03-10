@@ -286,7 +286,7 @@ public class AdditionActivity extends BaseActivity
 
     private static class FileIconOption {
         private static int[] sIds = new int[]
-                {R.drawable.bg_file_icon_square, R.drawable.bg_file_icon_circle};
+                {R.drawable.bg_rounded_rectange, R.drawable.bg_circle};
         private static String[] sNames = new String[]{"方形", "圆形"};
 
         private static String getNameById(int themeId) {

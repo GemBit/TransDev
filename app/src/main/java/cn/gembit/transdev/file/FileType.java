@@ -109,8 +109,10 @@ public class FileType {
 
     private static void generateIconDrawables(Context context) {
         Drawable[][] drawables = new Drawable[TYPE_COUNT][2];
+
+        int backgroundId = AppConfig.readFileIconBgId();
         for (int i = 0; i < drawables.length; i++) {
-            drawables[i][0] = ContextCompat.getDrawable(context, AppConfig.readFileIconBgId());
+            drawables[i][0] = ContextCompat.getDrawable(context, backgroundId);
         }
 
         drawables[DIR][0].setColorFilter(BaseActivity.getAttrColor(context, R.attr.colorPrimary),

@@ -18,10 +18,10 @@
             android:id="@+id/title"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            android:textColor="?attr/titleTextColor"
             android:ellipsize="end"
             android:gravity="center"
             android:maxLines="1"
+            android:textColor="?attr/titleTextColor"
             android:textSize="@dimen/mediumTextSize"
             app:layout_scrollFlags="scroll|enterAlways" />
 
@@ -53,8 +53,7 @@
         android:id="@+id/fabMenu"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        app:cardBackgroundColor="@android:color/transparent"
-        app:cardElevation="0dp" />
+        android:background="@android:color/transparent" />
 
     <cn.gembit.transdev.widgets.WaitView
         android:id="@+id/waitView"

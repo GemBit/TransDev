@@ -37,7 +37,7 @@ public class AppConfig {
     }
 
     public static int readFileIconBgId() {
-        return getPreferences().getInt("FileIconBgId", R.drawable.bg_file_icon_square);
+        return getPreferences().getInt("FileIconBgId", R.drawable.bg_rounded_rectange);
     }
     
     public static boolean isNewInstallation() {

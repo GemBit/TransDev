@@ -207,7 +207,7 @@ public abstract class ExplorerFragment extends Fragment {
         mAdapter = new FileListAdapter();
         notifySelectionCountChanged();
 
-        mRecyclerView.addOnScrollListener(new ExplorerFragment.ScrollToHideFabListener());
+        mRecyclerView.addOnScrollListener(new ScrollToHideFabListener());
         mRecyclerView.setAdapter(mAdapter);
 
         startUp();
@@ -655,8 +655,7 @@ public abstract class ExplorerFragment extends Fragment {
             itemView.mSizeView.setText(meta.size);
             itemView.mTimeView.setText(meta.time);
             itemView.setBackgroundColor(mSelectedItems.containsKey(meta) ?
-                    ExplorerFragment.sItemSelectedBackground :
-                    ExplorerFragment.sItemNormalBackground);
+                    sItemSelectedBackground : sItemNormalBackground);
         }
     }
 
@@ -671,12 +670,12 @@ public abstract class ExplorerFragment extends Fragment {
 
         @Override
         public void onScrollStateChanged(RecyclerView recyclerView, int newState) {
-            super.onScrollStateChanged(recyclerView, newState);
             if (newState == RecyclerView.SCROLL_STATE_DRAGGING && !mMoving) {
                 mMoving = true;
                 mFabMenu.clearAnimation();
                 mHeight = mFabMenu.heightFromScreenBottom();
                 mOffset = 0;
+
                 if (mFabMenu.getVisibility() != View.VISIBLE) {
                     mFabMenu.setVisibility(View.VISIBLE);
                     mFabMenu.offsetTopAndBottom(mHeight);
@@ -685,6 +684,7 @@ public abstract class ExplorerFragment extends Fragment {
             } else if (newState == RecyclerView.SCROLL_STATE_IDLE && mMoving) {
                 mMoving = false;
                 mFabMenu.offsetTopAndBottom(-mOffset);
+
                 if (mOffset >= mHeight) {
                     mFabMenu.setVisibility(View.INVISIBLE);
                 } else if (mOffset > 0) {
@@ -698,7 +698,6 @@ public abstract class ExplorerFragment extends Fragment {
 
         @Override
         public void onScrolled(RecyclerView recyclerView, int dx, int dy) {
-            super.onScrolled(recyclerView, dx, dy);
             dy /= MOVE_SCALE;
             if (mMoving) {
                 if (dy > 0 && mOffset < mHeight || dy < 0 && mOffset > 0) {
