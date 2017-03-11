@@ -19,14 +19,9 @@ import org.apache.ftpserver.usermanager.impl.TransferRatePermission;
 import org.apache.ftpserver.usermanager.impl.WritePermission;
 
 import java.io.File;
-import java.net.Inet4Address;
-import java.net.InetAddress;
-import java.net.NetworkInterface;
-import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -56,6 +51,7 @@ public class ServerWrapper {
 
     private FtpServer mFtpServer;
 
+    private String mIP;
     private int mPort = -1;
 
     private ServerWrapper() {
@@ -117,6 +113,10 @@ public class ServerWrapper {
 
     public synchronized void start() {
         stop();
+
+        if ((mIP = ConnectionBroadcast.tryOutMyIP()) == null) {
+            return;
+        }
 
         FtpServerFactory serverFactory = new FtpServerFactory();
 
@@ -189,26 +189,13 @@ public class ServerWrapper {
     public synchronized void stop() {
         if (mFtpServer != null && !mFtpServer.isStopped()) {
             mFtpServer.stop();
+            mIP = null;
             mPort = -1;
         }
     }
 
     public String getIP() {
-        try {
-            Enumeration<NetworkInterface> en = NetworkInterface.getNetworkInterfaces();
-            while (en.hasMoreElements()) {
-                Enumeration<InetAddress> enumIPAddress = en.nextElement().getInetAddresses();
-                while (enumIPAddress.hasMoreElements()) {
-                    InetAddress inetAddress = enumIPAddress.nextElement();
-                    if (inetAddress instanceof Inet4Address && inetAddress.isSiteLocalAddress()) {
-                        return inetAddress.getHostAddress();
-                    }
-                }
-            }
-        } catch (SocketException ex) {
-            ex.printStackTrace();
-        }
-        return "N/A";
+        return mIP == null ? "N/A" : mIP;
     }
 
     public int getPort() {

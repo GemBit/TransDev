@@ -9,6 +9,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
+import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -16,18 +17,19 @@ import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.Random;
 
+@SuppressWarnings("WeakerAccess")
 public class ConnectionBroadcast {
 
     private final static int BUFFER_SIZE = 1024;
 
     private final static String ENCODING = Charset.defaultCharset().name();
 
-    private final static int PREFERRED_PORT = 9706;
-    private final static int PORT_COUNT = 8;
-
-
     private final static InetAddress BROADCAST_ADDRESS;
+    private final static int PREFERRED_PORT = 9706;
+
+    private final static int PORT_COUNT = 8;
 
     private static boolean sSending = false;
     private static boolean sReceiving = false;
@@ -219,6 +221,86 @@ public class ConnectionBroadcast {
 
     public static void stopReceiving() {
         sReceiving = false;
+    }
+
+    public static String tryOutMyIP() {
+        final String[] iP = new String[1];
+
+        int testPort = PREFERRED_PORT;
+        DatagramSocket receiveSocket = null;
+        while (receiveSocket == null) {
+            try {
+                receiveSocket = new DatagramSocket(++testPort);
+                final int receivingTimeout = 500;
+                receiveSocket.setSoTimeout(receivingTimeout);
+            } catch (BindException e1) {
+                receiveSocket = null;
+            } catch (SocketException e2) {
+                receiveSocket = null;
+                break;
+            }
+        }
+        final int receivePort = testPort;
+
+        final int checkDataLength = 8;
+
+        final byte[] sentBytes = new byte[checkDataLength];
+        new Random().nextBytes(sentBytes);
+        final boolean[] sendError = {false};
+        new Thread(new Runnable() {
+            @Override
+            public void run() {
+                final DatagramPacket packet = new DatagramPacket(sentBytes, checkDataLength,
+                        ConnectionBroadcast.BROADCAST_ADDRESS, receivePort);
+                DatagramSocket sendSocket = null;
+                try {
+                    sendSocket = new DatagramSocket();
+                    sendSocket.setBroadcast(true);
+                    while (iP[0] == null) {
+                        sendSocket.send(packet);
+                    }
+                } catch (IOException e) {
+                    sendError[0] = true;
+                } finally {
+                    if (sendSocket != null) {
+                        sendSocket.close();
+                    }
+                }
+            }
+        }).start();
+
+        final byte[] receivedBytes = new byte[checkDataLength];
+        final DatagramPacket packet = new DatagramPacket(receivedBytes, checkDataLength);
+        int receivingTryCount = 20;
+        while (receiveSocket != null && !sendError[0] && receivingTryCount-- > 0) {
+            try {
+                receiveSocket.receive(packet);
+                if (packet.getLength() == checkDataLength) {
+                    boolean checked = true;
+                    for (int i = 0; i < checkDataLength; i++) {
+                        if (receivedBytes[i] != sentBytes[i]) {
+                            checked = false;
+                            break;
+                        }
+                    }
+                    if (checked) {
+                        iP[0] = packet.getAddress().getHostAddress();
+                        break;
+                    }
+                }
+            } catch (SocketTimeoutException e1) {
+                iP[0] = null;
+            } catch (IOException e2) {
+                iP[0] = null;
+                break;
+            }
+        }
+
+        if (receiveSocket != null) {
+            receiveSocket.close();
+        }
+
+        return iP[0];
     }
 
     public interface OnReceivedCallback {

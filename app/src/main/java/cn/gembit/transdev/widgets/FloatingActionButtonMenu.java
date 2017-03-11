@@ -31,30 +31,17 @@ import static android.content.Context.WINDOW_SERVICE;
 
 public class FloatingActionButtonMenu extends FrameLayout {
 
-    private final static Interpolator ANIMATION_INTERPOLATOR = new DecelerateInterpolator(2.0f);
+    private final static Interpolator ANIMATION_INTERPOLATOR = new DecelerateInterpolator(2.5f);
 
-    private final static RotateAnimation ROTATE_ANIMATION;
-    private final static RotateAnimation REVERSE_ROTATE_ANIMATION;
-    private final static AlphaAnimation APPEAR_ALPHA_ANIMATION;
-    private final static AlphaAnimation DISAPPEAR_ALPHA_ANIMATION;
-
-    private final static int ANIMATION_DURATION = 250;
+    private final static int ANIMATION_DURATION = 350;
     private final static float ROTATE_ANGLE = -45f;
 
-    static {
-        ROTATE_ANIMATION = new RotateAnimation(-ROTATE_ANGLE, 0f,
-                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
-        REVERSE_ROTATE_ANIMATION = new RotateAnimation(ROTATE_ANGLE, 0f,
-                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+    private RotateAnimation mRotateAnimation;
+    private RotateAnimation mReverseRotateAnimation;
+    private AlphaAnimation mAppearAlphaAnimation;
+    private AlphaAnimation mDisappearAlphaAnimation;
 
-        ROTATE_ANIMATION.setDuration(ANIMATION_DURATION);
-        ROTATE_ANIMATION.setInterpolator(ANIMATION_INTERPOLATOR);
-        REVERSE_ROTATE_ANIMATION.setDuration(ANIMATION_DURATION);
-        REVERSE_ROTATE_ANIMATION.setInterpolator(ANIMATION_INTERPOLATOR);
-
-        APPEAR_ALPHA_ANIMATION = new AlphaAnimation(0f, 1f);
-        DISAPPEAR_ALPHA_ANIMATION = new AlphaAnimation(1f, 0f);
-    }
+    private long mAnimationStartTime;
 
     private GridLayout mGridLayout;
     private AppCompatImageButton mBaseButton;
@@ -87,6 +74,19 @@ public class FloatingActionButtonMenu extends FrameLayout {
     }
 
     private void init() {
+        mRotateAnimation = new RotateAnimation(-ROTATE_ANGLE, 0f,
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+        mReverseRotateAnimation = new RotateAnimation(ROTATE_ANGLE, 0f,
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0.5f);
+
+        mRotateAnimation.setDuration(ANIMATION_DURATION);
+        mRotateAnimation.setInterpolator(ANIMATION_INTERPOLATOR);
+        mReverseRotateAnimation.setDuration(ANIMATION_DURATION);
+        mReverseRotateAnimation.setInterpolator(ANIMATION_INTERPOLATOR);
+
+        mAppearAlphaAnimation = new AlphaAnimation(0f, 1f);
+        mDisappearAlphaAnimation = new AlphaAnimation(1f, 0f);
+
         mGridLayout = new GridLayout(getContext());
         LayoutParams params =
                 new LayoutParams(LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
@@ -199,7 +199,8 @@ public class FloatingActionButtonMenu extends FrameLayout {
         }
 
         mBaseButton.setRotation(toExpandIt ? ROTATE_ANGLE : 0f);
-        mBaseButton.startAnimation(toExpandIt ? ROTATE_ANIMATION : REVERSE_ROTATE_ANIMATION);
+        mBaseButton.startAnimation(toExpandIt ? mRotateAnimation : mReverseRotateAnimation);
+        mAnimationStartTime = System.currentTimeMillis();
 
         setClickable(toExpandIt);
         setBackgroundColor(toExpandIt ? mDarkBackground : mTransparentBackground);
@@ -217,13 +218,15 @@ public class FloatingActionButtonMenu extends FrameLayout {
                 AnimationSet animation = new AnimationSet(true);
                 animation.setDuration(ANIMATION_DURATION);
                 animation.setInterpolator(ANIMATION_INTERPOLATOR);
+
                 if (toExpandIt) {
                     animation.addAnimation(new TranslateAnimation(0f, 0f, height, 0f));
-                    animation.addAnimation(APPEAR_ALPHA_ANIMATION);
+                    animation.addAnimation(mAppearAlphaAnimation);
                 } else {
                     animation.addAnimation(new TranslateAnimation(0f, 0f, 0f, height));
-                    animation.addAnimation(DISAPPEAR_ALPHA_ANIMATION);
+                    animation.addAnimation(mDisappearAlphaAnimation);
                 }
+
                 item.mButton.startAnimation(animation);
                 item.mTitle.startAnimation(animation);
             }
@@ -240,7 +243,6 @@ public class FloatingActionButtonMenu extends FrameLayout {
         mBaseButton.getLocationOnScreen(location);
         return size.y - location[1];
     }
-
 
     @Override
     protected void onConfigurationChanged(Configuration newConfig) {
@@ -302,14 +304,29 @@ public class FloatingActionButtonMenu extends FrameLayout {
             mTitle.setVisibility(INVISIBLE);
         }
 
-        public void setValidity(boolean valid) {
-            if (this.mValid = valid) {
-                mTitle.setVisibility(mExpanded ? VISIBLE : INVISIBLE);
-                mButton.setVisibility(mExpanded ? VISIBLE : INVISIBLE);
+        public void setValidity(final boolean valid) {
+            long delay;
+            if (mBaseButton.getAnimation() == null) {
+                delay = 0;
             } else {
-                mTitle.setVisibility(GONE);
-                mButton.setVisibility(GONE);
+                delay = mBaseButton.getAnimation().getDuration() -
+                        (System.currentTimeMillis() - mAnimationStartTime);
+                delay = delay > 0 ? delay : 0;
             }
+            mButton.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    if (mValid = valid) {
+                        mTitle.setVisibility(mExpanded ? VISIBLE : INVISIBLE);
+                        mButton.setVisibility(mExpanded ? VISIBLE : INVISIBLE);
+                    } else {
+                        mTitle.setVisibility(GONE);
+                        mButton.setVisibility(GONE);
+                    }
+                    mTitle.clearAnimation();
+                    mButton.clearAnimation();
+                }
+            }, delay);
         }
 
         public int getId() {

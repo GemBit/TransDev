@@ -43,26 +43,19 @@ import cn.gembit.transdev.app.AppConfig;
 import cn.gembit.transdev.file.FileMeta;
 import cn.gembit.transdev.file.FilePath;
 import cn.gembit.transdev.file.FileType;
-import cn.gembit.transdev.work.GlobalClipboard;
 import cn.gembit.transdev.widgets.AutoFitRecyclerView;
 import cn.gembit.transdev.widgets.FloatingActionButtonMenu;
 import cn.gembit.transdev.widgets.WaitView;
+import cn.gembit.transdev.work.GlobalClipboard;
 
 public abstract class ExplorerFragment extends Fragment {
-
-    final static Animation REFRESH_ANIMATION;
 
     private static int sPictureSize;
     private static int sItemNormalBackground;
     private static int sItemSelectedBackground;
     private static boolean sIsFirstAttach = true;
 
-    static {
-        REFRESH_ANIMATION = new ScaleAnimation(1f, 1f, 1.05f, 1f,
-                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0);
-        REFRESH_ANIMATION.setDuration(200);
-        REFRESH_ANIMATION.setInterpolator(new AccelerateInterpolator());
-    }
+    private Animation mRefreshAnimation;
 
     private FilePath mRootDir;
     private FilePath mCurDir;
@@ -96,29 +89,28 @@ public abstract class ExplorerFragment extends Fragment {
         public void onClick(View v) {
             if (v.getId() == mSelectInverseFAB.getId()) {
                 selectInverse();
-                return;
+            } else {
+                mFabMenu.expand(false);
+                if (v.getId() == mNewFileFAB.getId()) {
+                    newFile(false);
 
-            } else if (v.getId() == mNewFileFAB.getId()) {
-                newFile(false);
+                } else if (v.getId() == mNewDirFAB.getId()) {
+                    newFile(true);
 
-            } else if (v.getId() == mNewDirFAB.getId()) {
-                newFile(true);
+                } else if (v.getId() == mDeleteFAB.getId()) {
+                    delete(mAdapter.mSelectedItems.keySet());
 
-            } else if (v.getId() == mDeleteFAB.getId()) {
-                delete(mAdapter.mSelectedItems.keySet());
+                } else if (v.getId() == mCopyFAB.getId()) {
+                    copyOrCut(clearSelection(), true);
 
-            } else if (v.getId() == mCopyFAB.getId()) {
-                copyOrCut(new ArrayList<>(mAdapter.mSelectedItems.keySet()), true);
-                clearSelection();
+                } else if (v.getId() == mCutFAB.getId()) {
+                    copyOrCut(clearSelection(), false);
 
-            } else if (v.getId() == mCutFAB.getId()) {
-                copyOrCut(new ArrayList<>(mAdapter.mSelectedItems.keySet()), false);
-                clearSelection();
-
-            } else if (v.getId() == mRenameFAB.getId()) {
-                rename(mAdapter.mSelectedItems.keySet().iterator().next());
+                } else if (v.getId() == mRenameFAB.getId()) {
+                    rename(mAdapter.mSelectedItems.keySet().iterator().next());
+                }
             }
-            mFabMenu.expand(false);
+//            mFabMenu.expand(false);
         }
     };
 
@@ -146,6 +138,12 @@ public abstract class ExplorerFragment extends Fragment {
         if (mRootView != null) {
             return mRootView;
         }
+
+
+        mRefreshAnimation = new ScaleAnimation(1f, 1f, 1.05f, 1f,
+                Animation.RELATIVE_TO_SELF, 0.5f, Animation.RELATIVE_TO_SELF, 0);
+        mRefreshAnimation.setDuration(200);
+        mRefreshAnimation.setInterpolator(new AccelerateInterpolator());
 
         View rootView = inflater.inflate(R.layout.fragment_explorer, container, false);
         rootView.setEnabled(false);
@@ -231,8 +229,7 @@ public abstract class ExplorerFragment extends Fragment {
             return true;
         }
 
-        if (mAdapter.mSelectedItems.size() > 0) {
-            clearSelection();
+        if (clearSelection().size() > 0) {
             return true;
         }
 
@@ -345,7 +342,7 @@ public abstract class ExplorerFragment extends Fragment {
         Collections.sort(mAdapter.mMetaList);
         mAdapter.notifyDataSetChanged();
 
-        mRecyclerView.startAnimation(REFRESH_ANIMATION);
+        mRecyclerView.startAnimation(mRefreshAnimation);
         mRecyclerView.scrollToPosition(0);
 
         mFabMenu.expand(false);
@@ -363,15 +360,20 @@ public abstract class ExplorerFragment extends Fragment {
         mRenameFAB.setValidity(count == 1);
     }
 
-    private void clearSelection() {
+    private Collection<FileMeta> clearSelection() {
+        List<FileMeta> selected = new ArrayList<>(mAdapter.mSelectedItems.size());
+
         Iterator<Map.Entry<FileMeta, Integer>> it = mAdapter.mSelectedItems.entrySet().iterator();
         while (it.hasNext()) {
             Map.Entry<FileMeta, Integer> entry = it.next();
+            selected.add(entry.getKey());
             int position = entry.getValue();
             it.remove();
             mAdapter.notifyItemChanged(position);
         }
         notifySelectionCountChanged();
+
+        return selected;
     }
 
     private void selectInverse() {

@@ -16,16 +16,8 @@ import cn.gembit.transdev.activities.BaseActivity;
 public class WaitView extends FrameLayout {
 
     private final static int APPEAR_DELAY = 500;
-    private final static RotateAnimation ANIMATION;
 
-    static {
-        ANIMATION = new RotateAnimation(0, 360,
-                Animation.RELATIVE_TO_SELF, 0.5f,
-                Animation.RELATIVE_TO_SELF, 0.5f);
-        ANIMATION.setRepeatCount(Animation.INFINITE);
-        ANIMATION.setDuration(1000);
-        ANIMATION.setInterpolator(new LinearInterpolator());
-    }
+    private RotateAnimation mAnimation;
 
     private Handler mHandler;
     private Runnable mAppearance;
@@ -48,6 +40,13 @@ public class WaitView extends FrameLayout {
     private void init() {
         super.setVisibility(GONE);
 
+        mAnimation = new RotateAnimation(0, 360,
+                Animation.RELATIVE_TO_SELF, 0.5f,
+                Animation.RELATIVE_TO_SELF, 0.5f);
+        mAnimation.setRepeatCount(Animation.INFINITE);
+        mAnimation.setDuration(1000);
+        mAnimation.setInterpolator(new LinearInterpolator());
+
         ImageView background = new ImageView(getContext());
         background.setImageDrawable(
                 ContextCompat.getDrawable(getContext(), R.drawable.ic_wait_background));
@@ -65,7 +64,7 @@ public class WaitView extends FrameLayout {
             @Override
             public void run() {
                 WaitView.super.setVisibility(VISIBLE);
-                startAnimation(ANIMATION);
+                startAnimation(mAnimation);
             }
         };
     }

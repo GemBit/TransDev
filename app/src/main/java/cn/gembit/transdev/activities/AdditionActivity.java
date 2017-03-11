@@ -151,7 +151,6 @@ public class AdditionActivity extends BaseActivity
         return true;
     }
 
-    @SuppressWarnings("deprecation")
     @SuppressLint("SetJavaScriptEnabled")
     private void dialogForLibs(OptionItem item) {
         int textColor = BaseActivity.getAttrColor(this, android.R.attr.textColor);
