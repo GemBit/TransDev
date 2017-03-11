@@ -227,7 +227,7 @@ public class MainActivity extends BaseActivity
                 msg = "未开启";
             } else {
                 msg = "IP地址：" + ServerBookmark.mServer.getIP();
-                msg += "\n端口" + port;
+                msg += "\n端口：" + port;
             }
             new AlertDialog.Builder(this)
                     .setCancelable(false)
@@ -655,6 +655,7 @@ public class MainActivity extends BaseActivity
                         public void onClick(View v) {
                             LocalBookmark.remove(oldName);
                             mMenu.removeItem(item.getItemId());
+                            toast("删除成功");
                             dialog.dismiss();
                         }
                     });
@@ -736,6 +737,7 @@ public class MainActivity extends BaseActivity
                         public void onClick(View v) {
                             ClientBookmark.remove(oldName);
                             mMenu.removeItem(item.getItemId());
+                            toast("删除成功");
                             dialog.dismiss();
                         }
                     });
@@ -830,6 +832,11 @@ public class MainActivity extends BaseActivity
                         public void onClick(View v) {
                             ServerBookmark.remove(MainActivity.this, oldName);
                             mMenu.removeItem(item.getItemId());
+                            String msg = "删除成功";
+                            if (ServerBookmark.mServer.getPort() != -1) {
+                                msg += "，需要重启服务器生效";
+                            }
+                            toast(msg);
                             dialog.dismiss();
                         }
                     });
@@ -850,7 +857,7 @@ public class MainActivity extends BaseActivity
                             toast("用户名不可为空");
                         } else if (username.equals("anonymous") && !password.isEmpty()) {
                             edtPassword.setText("");
-                            toast("匿名账户无需密码");
+                            toast("匿名账户可以任意密码登陆");
 
                         } else {
 
@@ -858,13 +865,21 @@ public class MainActivity extends BaseActivity
                                     username, password, writable, confined);
 
                             if (item == null && ServerBookmark.create(newMeta)) {
-                                toast("添加成功");
+                                String msg = "添加成功";
+                                if (ServerBookmark.mServer.getPort() != -1) {
+                                    msg += "，需要重启服务器生效";
+                                }
+                                toast(msg);
                                 addBookmarkMenuItem(R.id.groupServer, username);
                                 dialog.dismiss();
 
                             } else if (item != null &&
                                     ServerBookmark.modify(MainActivity.this, oldName, newMeta)) {
-                                toast("编辑成功，需要重启服务器生效");
+                                String msg = "编辑成功";
+                                if (ServerBookmark.mServer.getPort() != -1) {
+                                    msg += "，需要重启服务器生效";
+                                }
+                                toast(msg);
                                 item.setTitle(username);
                                 dialog.dismiss();
 
