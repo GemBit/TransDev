@@ -144,7 +144,7 @@ public class AdditionActivity extends BaseActivity
                 new OptionCheckUpdate().dialogForUpdate(item);
 
             } else if (childPosition == 3) {
-                dialogForExit(item);
+                conformExit(this);
             }
         }
 
@@ -212,21 +212,6 @@ public class AdditionActivity extends BaseActivity
         startActivity(Intent.createChooser(intent, item.mTitle));
     }
 
-    private void dialogForExit(OptionItem item) {
-        new AlertDialog.Builder(this)
-                .setCancelable(false)
-                .setTitle(item.mTitle)
-                .setMessage("确定退出？")
-                .setNegativeButton("取消", null)
-                .setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        BaseActivity.exit();
-                    }
-                })
-                .show();
-    }
-
     private static class OptionGroup {
         private String mGroupTitle;
         private OptionItem[] mItems;
@@ -275,8 +260,18 @@ public class AdditionActivity extends BaseActivity
                                 AppConfig.saveThemeID(newId);
                                 item.mSubtitle = getNameById(newId);
                                 activity.mAdapter.notifyDataSetChanged();
-                                Toast.makeText(activity, "已更换主题，重启应用生效",
-                                        Toast.LENGTH_SHORT).show();
+
+                                new AlertDialog.Builder(activity)
+                                        .setTitle(item.mTitle)
+                                        .setMessage("已更换主题，立即重启以生效吗？")
+                                        .setNegativeButton("取消", null)
+                                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                BaseActivity.exit(true);
+                                            }
+                                        })
+                                        .show();
                             }
                         }
                     }).show();
@@ -312,8 +307,18 @@ public class AdditionActivity extends BaseActivity
                                 AppConfig.saveFileIconBgId(newId);
                                 item.mSubtitle = getNameById(newId);
                                 activity.mAdapter.notifyDataSetChanged();
-                                Toast.makeText(activity, "已更换图标形状，重启应用生效",
-                                        Toast.LENGTH_SHORT).show();
+
+                                new AlertDialog.Builder(activity)
+                                        .setTitle(item.mTitle)
+                                        .setMessage("已更换图标形状，立即重启以生效吗？")
+                                        .setNegativeButton("取消", null)
+                                        .setPositiveButton("确定", new DialogInterface.OnClickListener() {
+                                            @Override
+                                            public void onClick(DialogInterface dialog, int which) {
+                                                BaseActivity.exit(true);
+                                            }
+                                        })
+                                        .show();
                             }
                         }
                     }).show();

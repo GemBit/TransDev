@@ -39,7 +39,7 @@ public class AppConfig {
     public static int readFileIconBgId() {
         return getPreferences().getInt("FileIconBgId", R.drawable.bg_rounded_rectange);
     }
-    
+
     public static boolean isNewInstallation() {
         if (sIsNewInstallation == null) {
             SharedPreferences preferences = getPreferences();
@@ -48,5 +48,19 @@ public class AppConfig {
             preferences.edit().putBoolean("NewInstallation", false).apply();
         }
         return sIsNewInstallation[0];
+    }
+
+
+    public static void saveBugReport(String bugReport) {
+        getPreferences().edit().putString("BugReport", bugReport).apply();
+    }
+
+    public static String readBugReport() {
+        SharedPreferences preferences = getPreferences();
+        String bugReport = preferences.getString("BugReport", null);
+        if (bugReport != null) {
+            preferences.edit().remove("BugReport").apply();
+        }
+        return bugReport;
     }
 }

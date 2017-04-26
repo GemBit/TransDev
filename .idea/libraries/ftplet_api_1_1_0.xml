@@ -4,8 +4,6 @@
       <root url="jar://$PROJECT_DIR$/app/libs/ftplet-api-1.1.0.jar!/" />
     </CLASSES>
     <JAVADOC />
-    <SOURCES>
-      <root url="jar://$USER_HOME$/.ideaLibSources/ftplet-api-1.1.0-sources.jar!/" />
-    </SOURCES>
+    <SOURCES />
   </library>
 </component>

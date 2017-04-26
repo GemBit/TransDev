@@ -409,13 +409,22 @@ public class ServerWrapper {
                 }
                 USER_META_MAP.put(username, meta);
             }
+
             for (String mappedName : map.keySet()) {
                 int index = mappedName.lastIndexOf('/');
                 UserMeta meta = USER_META_MAP.get(mappedName.substring(0, index));
-                meta.mMappedPaths.add(new FilePath(mappedName.substring(index)));
+
+                FilePath mappedPath = new FilePath(mappedName.substring(index));
                 FilePath originalPath = new FilePath((String) map.get(mappedName));
-                meta.mOriginalPaths.add(originalPath);
-                meta.mPhysicalPaths.add(originalPath.move(sFtpRoot, sPhysicalRoot));
+                FilePath physicalPath = originalPath.move(sFtpRoot, sPhysicalRoot);
+                if (new File(physicalPath.pathString).exists()) {
+                    meta.mMappedPaths.add(mappedPath);
+                    meta.mOriginalPaths.add(originalPath);
+                    meta.mPhysicalPaths.add(physicalPath);
+                } else {
+                    removeRecord(meta.username, mappedPath);
+                }
+
             }
         }
     }

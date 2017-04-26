@@ -36,6 +36,8 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.OutputStream;
+import java.net.URL;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -43,6 +45,8 @@ import java.util.Comparator;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
+
+import javax.net.ssl.HttpsURLConnection;
 
 import cn.gembit.transdev.R;
 import cn.gembit.transdev.app.AliveKeeper;
@@ -85,13 +89,6 @@ public class MainActivity extends BaseActivity
     private SwitchCompat mSwtServer;
 
     private Menu mMenu;
-    private MenuItem mTaskManage;
-    private MenuItem mQuickConnect;
-    private MenuItem mAddition;
-    private MenuItem mAddLocal;
-    private MenuItem mAddClient;
-    private MenuItem mAddServer;
-    private MenuItem mServerStatus;
 
     private LinkedList<MenuItem> mSessionMenuItems = new LinkedList<>();
     private LinkedList<ExplorerFragment> mSessionFragments = new LinkedList<>();
@@ -100,6 +97,36 @@ public class MainActivity extends BaseActivity
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+
+        final String bugReport = AppConfig.readBugReport();
+        if (bugReport != null) {
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    HttpsURLConnection connection = null;
+                    try {
+                        URL url = new URL("https://transdev.gembit.cn/BugReport.php");
+                        connection = (HttpsURLConnection) url.openConnection();
+                        connection.setRequestMethod("POST");
+                        connection.setDoOutput(true);
+                        connection.setDoInput(true);
+                        connection.setUseCaches(false);
+                        OutputStream os = connection.getOutputStream();
+                        os.write(bugReport.getBytes());
+                        os.flush();
+                        os.close();
+                        connection.getResponseCode();
+                    } catch (Exception e) {
+                        AppConfig.saveBugReport(bugReport);
+                    } finally {
+                        if (connection != null) {
+                            connection.disconnect();
+                        }
+                    }
+                }
+            }).start();
+        }
 
         PackageInfo info;
         try {
@@ -110,7 +137,7 @@ public class MainActivity extends BaseActivity
                     new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss(DialogInterface dialog) {
-                            BaseActivity.exit();
+                            BaseActivity.exit(false);
                         }
                     }
             ).show();
@@ -138,7 +165,7 @@ public class MainActivity extends BaseActivity
                     .setOnDismissListener(new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss(DialogInterface dialog) {
-                            BaseActivity.exit();
+                            BaseActivity.exit(false);
                         }
                     })
                     .show();
@@ -157,10 +184,12 @@ public class MainActivity extends BaseActivity
 
     @Override
     public void onBackPressed() {
-        if (!closeDrawer()) {
+        if (!switchDrawer(false)) {
             int index = mPager.getCurrentItem();
             if (index >= 0 && index < mSessionFragments.size()) {
-                mSessionFragments.get(index).onBackPress();
+                if (!mSessionFragments.get(index).onBackPress()) {
+                    switchDrawer(true);
+                }
             }
         }
     }
@@ -184,100 +213,107 @@ public class MainActivity extends BaseActivity
                     new DialogInterface.OnDismissListener() {
                         @Override
                         public void onDismiss(DialogInterface dialog) {
-                            BaseActivity.exit();
+                            BaseActivity.exit(false);
                         }
                     }).show();
         } else {
-            Context applicationContext = getApplicationContext();
-            finish();
-
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            applicationContext.startActivity(intent);
+            BaseActivity.exit(true);
         }
     }
 
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        if (item == mTaskManage) {
-            startActivity(new Intent(this, TaskActivity.class));
-            closeDrawer();
+        switch (item.getItemId()) {
+            case R.id.addLocal:
+                addOrModifyLocalBookmark(null);
+                break;
 
-        } else if (item == mQuickConnect) {
-            quickConnect();
-            closeDrawer();
+            case R.id.addClient:
+                addOrModifyClientBookmark(null);
+                break;
 
-        } else if (item == mAddition) {
-            startActivity(new Intent(this, AdditionActivity.class));
-            closeDrawer();
+            case R.id.addServer:
+                addOrModifyServerBookmark(null);
+                break;
 
-        } else if (item == mAddLocal) {
-            addOrModifyLocalBookmark(null);
+            case R.id.serverStatus:
+                String msg;
+                int port = ServerBookmark.mServer.getPort();
+                if (port == -1) {
+                    msg = "未开启";
+                } else {
+                    msg = "IP地址：" + ServerBookmark.mServer.getIP();
+                    msg += "\n端口：" + port;
+                }
+                new AlertDialog.Builder(this)
+                        .setCancelable(false)
+                        .setTitle("本机共享状态")
+                        .setMessage(msg)
+                        .setPositiveButton("确定", null)
+                        .show();
+                break;
 
-        } else if (item == mAddClient) {
-            addOrModifyClientBookmark(null);
+            case R.id.taskManage:
+                startActivity(new Intent(this, TaskActivity.class));
+                switchDrawer(false);
+                break;
 
-        } else if (item == mAddServer) {
-            addOrModifyServerBookmark(null);
+            case R.id.quickConnect:
+                quickConnect();
+                switchDrawer(false);
+                break;
 
-        } else if (item == mServerStatus) {
-            String msg;
-            int port = ServerBookmark.mServer.getPort();
-            if (port == -1) {
-                msg = "未开启";
-            } else {
-                msg = "IP地址：" + ServerBookmark.mServer.getIP();
-                msg += "\n端口：" + port;
-            }
-            new AlertDialog.Builder(this)
-                    .setCancelable(false)
-                    .setTitle("本机共享状态")
-                    .setMessage(msg)
-                    .setPositiveButton("确定", null)
-                    .show();
+            case R.id.addition:
+                startActivity(new Intent(this, AdditionActivity.class));
+                switchDrawer(false);
+                break;
 
-        } else {
-            String name = item.getTitle().toString();
+            case R.id.exit:
+                conformExit(this);
+                break;
 
-            switch (item.getGroupId()) {
-                case R.id.groupLocal:
-                    addSession(
-                            LocalExplorerFragment.newInstance("本地文件：" + name,
-                                    LocalBookmark.mMap.get(name)),
-                            R.drawable.ic_local,
-                            name);
-                    break;
+            default:
+                switchDrawer(false);
+                String name = item.getTitle().toString();
 
-                case R.id.groupClient:
-                    addSession(
-                            ClientExplorerFragment.newInstance("远程文件：" + name,
-                                    ClientBookmark.mMap.get(name)),
-                            R.drawable.ic_client,
-                            name);
-                    break;
-
-                case R.id.groupServer:
-                    if (!ServerBookmark.mMap.get(name).confined) {
-                        BottomDialogBuilder.make(this,
-                                "此账号具有全局访问权限，不可对其选择共享的文件").show();
+                switch (item.getGroupId()) {
+                    case R.id.groupLocal:
+                        addSession(
+                                LocalExplorerFragment.newInstance("本地文件：" + name,
+                                        LocalBookmark.mMap.get(name)),
+                                R.drawable.ic_local,
+                                name);
                         break;
-                    }
-                    addSession(
-                            ServerExplorerFragment.newInstance("已共享文件：" + name, name),
-                            R.drawable.ic_server,
-                            name);
-                    break;
 
-                case R.id.groupSession:
-                    mPager.setCurrentItem(mSessionMenuItems.indexOf(item));
-                    break;
+                    case R.id.groupClient:
+                        addSession(
+                                ClientExplorerFragment.newInstance("远程文件：" + name,
+                                        ClientBookmark.mMap.get(name)),
+                                R.drawable.ic_client,
+                                name);
+                        break;
 
-                default:
-                    break;
-            }
+                    case R.id.groupServer:
+                        if (!ServerBookmark.mMap.get(name).confined) {
+                            BottomDialogBuilder.make(this,
+                                    "此账号具有全局访问权限，不可对其选择共享的文件").show();
+                            break;
+                        }
+                        addSession(
+                                ServerExplorerFragment.newInstance("已共享文件：" + name, name),
+                                R.drawable.ic_server,
+                                name);
+                        break;
 
-            closeDrawer();
+                    case R.id.groupSession:
+                        mPager.setCurrentItem(mSessionMenuItems.indexOf(item));
+                        break;
+
+                    default:
+                        break;
+                }
         }
+
         return true;
     }
 
@@ -290,13 +326,6 @@ public class MainActivity extends BaseActivity
         mPager.setAdapter(mAdapter);
 
         mMenu = navigation.getMenu();
-        mTaskManage = mMenu.findItem(R.id.taskManage);
-        mQuickConnect = mMenu.findItem(R.id.quickConnect);
-        mAddition = mMenu.findItem(R.id.addition);
-        mAddLocal = mMenu.findItem(R.id.addLocal);
-        mAddClient = mMenu.findItem(R.id.addClient);
-        mAddServer = mMenu.findItem(R.id.addServer);
-        mServerStatus = mMenu.findItem(R.id.serverStatus);
 
         LocalBookmark.restore(this);
         ClientBookmark.restore(this);
@@ -335,7 +364,7 @@ public class MainActivity extends BaseActivity
                 }).start();
             }
         });
-        mServerStatus.setActionView(mSwtServer);
+        mMenu.findItem(R.id.serverStatus).setActionView(mSwtServer);
 
         navigation.setNavigationItemSelectedListener(this);
 
@@ -343,14 +372,11 @@ public class MainActivity extends BaseActivity
             @Override
             public void onDrawerOpened(View drawerView) {
                 int count = TaskService.getUnfinishedTaskCount();
-                mTaskManage.setTitle("任务管理" + (count > 0 ? " (" + count + ")" : ""));
+                mMenu.findItem(R.id.taskManage)
+                        .setTitle("任务管理" + (count > 0 ? " (" + count + ")" : ""));
                 mSwtServer.setChecked(ServerBookmark.mServer.getPort() != -1);
             }
 
-            @Override
-            public void onDrawerStateChanged(int newState) {
-                super.onDrawerStateChanged(newState);
-            }
         });
 
         mPager.addOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
@@ -413,12 +439,16 @@ public class MainActivity extends BaseActivity
         }
     }
 
-    private boolean closeDrawer() {
-        if (mDrawer.isDrawerOpen(GravityCompat.START)) {
-            mDrawer.closeDrawer(GravityCompat.START);
-            return true;
+    private boolean switchDrawer(boolean open) {
+        if (open == mDrawer.isDrawerOpen(GravityCompat.START)) {
+            return false;
         }
-        return false;
+        if (open) {
+            mDrawer.openDrawer(GravityCompat.START);
+        } else {
+            mDrawer.closeDrawer(GravityCompat.START);
+        }
+        return true;
     }
 
     private void toast(String msg) {
@@ -547,7 +577,7 @@ public class MainActivity extends BaseActivity
         imageView.setImageDrawable(drawable);
 
         item = mMenu.add(
-                R.id.groupSession, View.generateViewId(), mAddition.getOrder() + 1, menuItemTitle)
+                R.id.groupSession, View.generateViewId(), 1, menuItemTitle)
                 .setIcon(iconResId)
                 .setActionView(imageView)
                 .setCheckable(true)
@@ -588,8 +618,10 @@ public class MainActivity extends BaseActivity
 
         switch (grpId) {
             case R.id.groupLocal:
-                item = mMenu.add(
-                        grpId, View.generateViewId(), mAddLocal.getOrder() - 1, name)
+                item = mMenu.add(grpId,
+                        View.generateViewId(),
+                        mMenu.findItem(R.id.addLocal).getOrder() - 1,
+                        name)
                         .setIcon(R.drawable.ic_local)
                         .setActionView(imageView);
                 imageView.setOnClickListener(new View.OnClickListener() {
@@ -602,7 +634,10 @@ public class MainActivity extends BaseActivity
 
             case R.id.groupClient:
                 item = mMenu.add(
-                        grpId, View.generateViewId(), mAddClient.getOrder() - 1, name)
+                        grpId,
+                        View.generateViewId(),
+                        mMenu.findItem(R.id.addClient).getOrder() - 1,
+                        name)
                         .setIcon(R.drawable.ic_client)
                         .setActionView(imageView);
                 imageView.setOnClickListener(new View.OnClickListener() {
@@ -615,7 +650,10 @@ public class MainActivity extends BaseActivity
 
             case R.id.groupServer:
                 item = mMenu.add(
-                        grpId, View.generateViewId(), mAddServer.getOrder() - 1, name)
+                        grpId,
+                        View.generateViewId(),
+                        mMenu.findItem(R.id.addServer).getOrder() - 1,
+                        name)
                         .setIcon(R.drawable.ic_server)
                         .setActionView(imageView);
                 imageView.setOnClickListener(new View.OnClickListener() {

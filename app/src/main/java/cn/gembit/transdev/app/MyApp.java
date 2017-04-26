@@ -1,18 +1,29 @@
 package cn.gembit.transdev.app;
 
 import android.app.Application;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Looper;
+import android.os.Process;
 import android.os.StrictMode;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
+import java.net.URL;
 
+import javax.net.ssl.HttpsURLConnection;
+
+import cn.gembit.transdev.activities.AdditionActivity;
 import cn.gembit.transdev.activities.BaseActivity;
 
 
@@ -22,6 +33,10 @@ public class MyApp extends Application implements Thread.UncaughtExceptionHandle
 
     public static SharedPreferences getSharedPreferences(String name) {
         return sMyApp.getApplicationContext().getSharedPreferences(name, MODE_PRIVATE);
+    }
+
+    public static Context getAppContext() {
+        return sMyApp.getApplicationContext();
     }
 
     private static String encode(String message) {
@@ -119,16 +134,9 @@ public class MyApp extends Application implements Thread.UncaughtExceptionHandle
                     e = e.getCause();
                 } while (e != null);
 
-                String url = "http://transdev.gembit.cn/BugReport.php";
-                url += "?msg=" + MyApp.encode(msg.substring(0, Math.min(msg.length(), 2000)));
+                AppConfig.saveBugReport("msg=" + encode(msg.toString()));
 
-                Intent chooser = Intent.createChooser(
-                        new Intent(Intent.ACTION_VIEW, Uri.parse(url)),
-                        "应用崩溃，是否发送报告？");
-                chooser.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                sMyApp.getApplicationContext().startActivity(chooser);
-
-                BaseActivity.exit();
+                BaseActivity.exit(true);
             }
         });
 

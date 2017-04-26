@@ -12,11 +12,15 @@ import java.io.IOException;
 import java.net.BindException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.net.UnknownHostException;
 import java.nio.charset.Charset;
+import java.util.Enumeration;
+import java.util.LinkedList;
 import java.util.Random;
 
 @SuppressWarnings("WeakerAccess")
@@ -224,7 +228,37 @@ public class ConnectionBroadcast {
     }
 
     public static String tryOutMyIP() {
-        final String[] iP = new String[1];
+        final String preferredIPPrefix = "192.168.";
+        final LinkedList<String> enumIP = new LinkedList<>();
+        final String[] netIP = new String[1];
+
+        Enumeration<NetworkInterface> en;
+        try {
+            en = NetworkInterface.getNetworkInterfaces();
+        } catch (SocketException ex) {
+            en = null;
+        }
+        while (en != null && en.hasMoreElements()) {
+            Enumeration<InetAddress> enumIPAddress = en.nextElement().getInetAddresses();
+            while (enumIPAddress.hasMoreElements()) {
+                InetAddress inetAddress = enumIPAddress.nextElement();
+                if (inetAddress instanceof Inet4Address && inetAddress.isSiteLocalAddress()) {
+                    if (inetAddress.getHostAddress().startsWith(preferredIPPrefix)) {
+                        enumIP.add(0, inetAddress.getHostAddress());
+                    } else {
+                        enumIP.add(inetAddress.getHostAddress());
+                    }
+                }
+            }
+        }
+
+        if (enumIP.size() == 1 || enumIP.size() > 1 &&
+                enumIP.get(0).startsWith(preferredIPPrefix) &&
+                !enumIP.get(1).startsWith(preferredIPPrefix)) {
+            return enumIP.getFirst();
+        } else if (enumIP.isEmpty()) {
+            return null;
+        }
 
         int testPort = PREFERRED_PORT;
         DatagramSocket receiveSocket = null;
@@ -256,7 +290,7 @@ public class ConnectionBroadcast {
                 try {
                     sendSocket = new DatagramSocket();
                     sendSocket.setBroadcast(true);
-                    while (iP[0] == null) {
+                    while (netIP[0] == null) {
                         sendSocket.send(packet);
                     }
                 } catch (IOException e) {
@@ -284,14 +318,14 @@ public class ConnectionBroadcast {
                         }
                     }
                     if (checked) {
-                        iP[0] = packet.getAddress().getHostAddress();
+                        netIP[0] = packet.getAddress().getHostAddress();
                         break;
                     }
                 }
             } catch (SocketTimeoutException e1) {
-                iP[0] = null;
+                netIP[0] = null;
             } catch (IOException e2) {
-                iP[0] = null;
+                netIP[0] = null;
                 break;
             }
         }
@@ -300,7 +334,15 @@ public class ConnectionBroadcast {
             receiveSocket.close();
         }
 
-        return iP[0];
+        if (netIP[0] != null) {
+            return netIP[0];
+        } else {
+            String ip = "";
+            for (int i = 0; i < enumIP.size(); i++) {
+                ip += "\n" + enumIP.get(i);
+            }
+            return ip;
+        }
     }
 
     public interface OnReceivedCallback {
